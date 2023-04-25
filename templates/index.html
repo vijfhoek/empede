@@ -117,22 +117,28 @@
 
     <ul class="dir">
       {% for entry in entries %}
-      <li>
-        {% match entry %}
-        {% when mpd::Entry::Song with { name, path, artist } %}
+      {% match entry %}
+      {% when mpd::Entry::Song with { name, path, artist } %}
+      <li hx-post="/queue?path={{path}}" hx-swap="none" role="button" >
         <span class="material-symbols-outlined">music_note</span>
-        <div hx-post="/queue?path={{path}}" hx-swap="none" role="button" class="song">
+        <div class="song">
           <div class="song__name">{{ name }}</div>
           <div class="song__artist">{{ artist }}</div>
         </a>
-        {% when mpd::Entry::Directory with { name, path }%}
+      </li>
+      {% when mpd::Entry::Directory with { name, path }%}
+      <li onclick="window.location = '?path={{path}}'">
         <span class="material-symbols-outlined">folder</span>
         <a href="?path={{path}}">{{ name }}</a>
-        {% when mpd::Entry::Playlist with { name, path } %}
-        <span class="material-symbols-outlined">playlist_play</span>
-        <a href="?path={{path}}">{{ name }}</a>
-        {% endmatch %}
       </li>
+      {% when mpd::Entry::Playlist with { name, path } %}
+      <li hx-post="/queue?path={{path}}" hx-swap="none" role="button" >
+        <span class="material-symbols-outlined">playlist_play</span>
+        <div class="song">
+          <div class="song__name">{{ name }}</div>
+        </a>
+      </li>
+      {% endmatch %}
       {% endfor %}
     </ul>
 
