@@ -50,13 +50,13 @@ async fn get_queue(_req: tide::Request<()>) -> tide::Result {
 }
 
 #[derive(Template)]
-#[template(path = "current.html")]
+#[template(path = "player.html")]
 struct CurrentTemplate {
     song: Option<mpdrs::Song>,
     name: Option<String>,
 }
 
-async fn get_current(_req: tide::Request<()>) -> tide::Result {
+async fn get_player(_req: tide::Request<()>) -> tide::Result {
     let mut mpd = mpd::connect()?;
     let song = mpd.currentsong()?;
 
@@ -160,7 +160,7 @@ async fn main() -> tide::Result<()> {
 
     app.at("/").get(index);
     app.at("/queue").get(get_queue);
-    app.at("/current").get(get_current);
+    app.at("/player").get(get_player);
     app.at("/art").get(get_art);
 
     app.at("/sse").get(tide::sse::endpoint(sse));
