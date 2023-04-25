@@ -59,13 +59,15 @@ struct CurrentTemplate {
 async fn get_current(_req: tide::Request<()>) -> tide::Result {
     let mut mpd = mpd::connect()?;
     let song = mpd.currentsong()?;
-    
-    let mut template = CurrentTemplate { song: song.clone(), name: None };
+
+    let mut template = CurrentTemplate {
+        song: song.clone(),
+        name: None,
+    };
 
     if let Some(song) = song {
         let name = song.title.unwrap_or(song.file.clone()).to_string();
         template.name = Some(name);
-
     }
 
     Ok(template.into())
