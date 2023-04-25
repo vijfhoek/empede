@@ -1,0 +1,9 @@
+{# Template #}
+<!DOCTYPE html>
+<ul class="queue">
+  {% for item in queue %}
+  <li {% if item.playing %}class="playing"{% endif %}>
+    <input type="checkbox" /> {{ item.title }}
+  </li>
+  {% endfor %}
+</ul>

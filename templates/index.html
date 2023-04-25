@@ -1,0 +1,141 @@
+{# Template #}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Empede</title>
+    <script src="https://unpkg.com/htmx.org@1.9.0" integrity="sha384-aOxz9UdWG0yBiyrTwPeMibmaoq07/d3a96GCbb9x60f3mOt5zwkjdbcHFnKH8qls" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,1,0" />
+
+    <style>
+      body {
+        font-family: sans;
+        background-color: #112;
+        color: #fff;
+      }
+
+      a {
+        color: #fff;
+        font-weight: bold;
+        text-decoration: none;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      ul.queue li {
+        padding: .5rem 0;
+      }
+      ul.queue li.playing {
+        font-weight: bold;
+      }
+
+      ul.breadcrumb {
+        display: flex;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        list-style: none;
+        background-color: #334;
+        border-radius: .25rem;
+        padding: .75rem 1rem;
+      }
+
+      ul.breadcrumb li:not(:first-child)::before {
+        display: inline-block;
+        padding-left: .5rem;
+        padding-right: .5rem;
+        color: #6c757d;
+        content: "/";
+      }
+
+      ul.dir li {
+        cursor: pointer;
+        padding: .75rem .75rem;
+        border-radius: 3px;
+
+        display: flex;
+        align-items: center;
+      }
+
+      ul.dir li:hover {
+        background-color: #334;
+      }
+
+      ul.dir li .material-symbols-outlined {
+        margin-right: 0.75rem;
+        width: 24px;
+      }
+
+      .song .song__name {
+        font-weight: bold;
+      }
+
+      span.control {
+        font-size: 40px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+
+  <body hx-sse="connect:/sse">
+    <span
+      hx-post="/previous" hx-swap="none" 
+      class="control material-symbols-outlined" role="button"
+    >skip_previous</span>
+    <span 
+      hx-post="/play" hx-swap="none" 
+      class="control material-symbols-outlined" role="button"
+    >play_arrow</span>
+    <span
+      hx-post="/pause" hx-swap="none" 
+      class="control material-symbols-outlined" role="button"
+    >pause</span>
+    <span 
+      hx-post="/next" hx-swap="none" 
+      class="control material-symbols-outlined" role="button"
+    >skip_next</span>
+
+    <div hx-trigger="load,sse:queue,sse:player" hx-get="/queue"></div>
+
+    <hr>
+
+    <ul class="breadcrumb">
+      <li><a href="?path=">Root</a></li>
+      {% for (i, component) in path.iter().enumerate() %}
+      <li>
+        {% if i == path.len() - 1 %}
+        {{ component }}
+        {% else %}
+        <a href="?path={{ path[..i + 1].join("/") }}">
+          {{ component }}
+        </a>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+
+    <ul class="dir">
+      {% for entry in entries %}
+      <li>
+        {% match entry %}
+        {% when mpd::Entry::Song with { name, path, artist } %}
+        <span class="material-symbols-outlined">music_note</span>
+        <div hx-post="/queue?path={{path}}" hx-swap="none" role="button" class="song">
+          <div class="song__name">{{ name }}</div>
+          <div class="song__artist">{{ artist }}</div>
+        </a>
+        {% when mpd::Entry::Directory with { name, path }%}
+        <span class="material-symbols-outlined">folder</span>
+        <a href="?path={{path}}">{{ name }}</a>
+        {% when mpd::Entry::Playlist with { name, path } %}
+        <span class="material-symbols-outlined">playlist_play</span>
+        <a href="?path={{path}}">{{ name }}</a>
+        {% endmatch %}
+      </li>
+      {% endfor %}
+    </ul>
+
+  </body>
+</html>
+
