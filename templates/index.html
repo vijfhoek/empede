@@ -13,6 +13,16 @@
         font-family: sans;
         background-color: #112;
         color: #fff;
+        display: flex;
+        margin: 0;
+      }
+
+      body > div {
+        padding: 1rem;
+      }
+
+      .browser {
+        flex: 1;
       }
 
       a {
@@ -24,12 +34,20 @@
       ul {
         list-style: none;
         padding: 0;
+        margin: 0;
+      }
+
+      ul.queue {
+        margin-top: 1.0rem;
       }
 
       ul.queue li {
-        padding: .5rem 0;
+        padding: 1.0rem 0.75rem;
+        border-radius: .25rem;
       }
+
       ul.queue li.playing {
+        background-color: #334;
         font-weight: bold;
       }
 
@@ -60,6 +78,12 @@
         align-items: center;
       }
 
+      ul.dir li img {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+      }
+
       ul.dir li:hover {
         background-color: #334;
       }
@@ -69,81 +93,103 @@
         width: 24px;
       }
 
-      .song .song__name {
+      .song__name {
         font-weight: bold;
       }
 
-      span.control {
+      .player {
+        width: 25rem;
+      }
+
+      .player .nowplaying {
+        flex-flow: column;
+        background-color: #334;
+        border-radius: 0.25rem;
+      }
+
+      .player .controls {
+        display: flex;
+        justify-content: space-around;
+        padding: 0.5rem;
+      }
+
+      .player .control {
         font-size: 40px;
         cursor: pointer;
+      }
+
+      .player .current {
+        display: flex;
+        flex-flow: row;
+        align-items: center;
+        padding: 0.5rem;
+      }
+
+      .player .albumart {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        display: block;
+        margin-right: 1.0rem;
+        border-radius: 0.25rem;
+      }
+
+      .player .metadata {
+        flex: 1;
       }
     </style>
   </head>
 
   <body hx-sse="connect:/sse">
-    <span
-      hx-post="/previous" hx-swap="none" 
-      class="control material-symbols-outlined" role="button"
-    >skip_previous</span>
-    <span 
-      hx-post="/play" hx-swap="none" 
-      class="control material-symbols-outlined" role="button"
-    >play_arrow</span>
-    <span
-      hx-post="/pause" hx-swap="none" 
-      class="control material-symbols-outlined" role="button"
-    >pause</span>
-    <span 
-      hx-post="/next" hx-swap="none" 
-      class="control material-symbols-outlined" role="button"
-    >skip_next</span>
-
-    <div hx-trigger="load,sse:queue,sse:player" hx-get="/queue"></div>
-
-    <hr>
-
-    <ul class="breadcrumb">
-      <li><a href="?path=">Root</a></li>
-      {% for (i, component) in path.iter().enumerate() %}
-      <li>
-        {% if i == path.len() - 1 %}
-        {{ component }}
-        {% else %}
-        <a href="?path={{ path[..i + 1].join("/") }}">
+    <div class="browser">
+      <ul class="breadcrumb">
+        <li><a href="?path=">Root</a></li>
+        {% for (i, component) in path.iter().enumerate() %}
+        <li>
+          {% if i == path.len() - 1 %}
           {{ component }}
-        </a>
-        {% endif %}
-      </li>
-      {% endfor %}
-    </ul>
+          {% else %}
+          <a href="?path={{ path[..i + 1].join("/") }}">
+            {{ component }}
+          </a>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
 
-    <ul class="dir">
-      {% for entry in entries %}
-      {% match entry %}
-      {% when mpd::Entry::Song with { name, path, artist } %}
-      <li hx-post="/queue?path={{path}}" hx-swap="none" role="button" >
-        <span class="material-symbols-outlined">music_note</span>
-        <div class="song">
-          <div class="song__name">{{ name }}</div>
-          <div class="song__artist">{{ artist }}</div>
-        </a>
-      </li>
-      {% when mpd::Entry::Directory with { name, path }%}
-      <li onclick="window.location = '?path={{path}}'">
-        <span class="material-symbols-outlined">folder</span>
-        <a href="?path={{path}}">{{ name }}</a>
-      </li>
-      {% when mpd::Entry::Playlist with { name, path } %}
-      <li hx-post="/queue?path={{path}}" hx-swap="none" role="button" >
-        <span class="material-symbols-outlined">playlist_play</span>
-        <div class="song">
-          <div class="song__name">{{ name }}</div>
-        </a>
-      </li>
-      {% endmatch %}
-      {% endfor %}
-    </ul>
+      <ul class="dir">
+        {% for entry in entries %}
+        {% match entry %}
+        {% when mpd::Entry::Song with { name, path, artist } %}
+        <li hx-post="/queue?path={{path}}" hx-swap="none" role="button" >
+          <span class="material-symbols-outlined">music_note</span>
+          <!-- img src="/art?path={{path}}" -->
+          <div class="song">
+            <div class="song__name">{{ name }}</div>
+            <div class="song__artist">{{ artist }}</div>
+          </a>
+        </li>
+        {% when mpd::Entry::Directory with { name, path }%}
+        <li onclick="window.location = '?path={{path}}'">
+          <span class="material-symbols-outlined">folder</span>
+          <a href="?path={{path}}">{{ name }}</a>
+        </li>
+        {% when mpd::Entry::Playlist with { name, path } %}
+        <li hx-post="/queue?path={{path}}" hx-swap="none" role="button" >
+          <span class="material-symbols-outlined">playlist_play</span>
+          <div class="song">
+            <div class="song__name">{{ name }}</div>
+          </a>
+        </li>
+        {% endmatch %}
+        {% endfor %}
+      </ul>
+    </div>
 
+    <div class="player">
+      <div hx-trigger="load,sse:queue,sse:player" hx-get="/current"></div>
+      <div hx-trigger="load,sse:queue,sse:player" hx-get="/queue"></div>
+    </div>
   </body>
 </html>
 

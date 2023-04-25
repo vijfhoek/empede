@@ -49,6 +49,28 @@ async fn get_queue(_req: tide::Request<()>) -> tide::Result {
     Ok(template.into())
 }
 
+#[derive(Template)]
+#[template(path = "current.html")]
+struct CurrentTemplate {
+    song: Option<mpdrs::Song>,
+    name: Option<String>,
+}
+
+async fn get_current(_req: tide::Request<()>) -> tide::Result {
+    let mut mpd = mpd::connect()?;
+    let song = mpd.currentsong()?;
+    
+    let mut template = CurrentTemplate { song: song.clone(), name: None };
+
+    if let Some(song) = song {
+        let name = song.title.unwrap_or(song.file.clone()).to_string();
+        template.name = Some(name);
+
+    }
+
+    Ok(template.into())
+}
+
 #[derive(Deserialize)]
 struct PostQueueQuery {
     path: String,
@@ -78,6 +100,18 @@ async fn post_previous(_req: tide::Request<()>) -> tide::Result {
 async fn post_next(_req: tide::Request<()>) -> tide::Result {
     mpd::connect()?.next()?;
     Ok("".into())
+}
+
+async fn get_art(req: tide::Request<()>) -> tide::Result {
+    let query: IndexQuery = req.query()?;
+    let resp = if let Ok(art) = mpd::connect()?.albumart(&query.path) {
+        tide::Response::builder(tide::StatusCode::Ok)
+            .body(art)
+            .header("cache-control", "max-age=3600")
+    } else {
+        tide::Response::builder(tide::StatusCode::NotFound)
+    };
+    Ok(resp.into())
 }
 
 async fn sse(_req: tide::Request<()>, sender: tide::sse::Sender) -> tide::Result<()> {
@@ -120,6 +154,8 @@ async fn main() -> tide::Result<()> {
 
     app.at("/").get(index);
     app.at("/queue").get(get_queue);
+    app.at("/current").get(get_current);
+    app.at("/art").get(get_art);
 
     app.at("/sse").get(tide::sse::endpoint(sse));
 

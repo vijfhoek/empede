@@ -1,0 +1,37 @@
+{# #}
+<!DOCTYPE html>
+<div class="nowplaying">
+  <div class="current">
+    {% if let Some(song) = song %}
+    <img class="albumart" src="/art?path={{ song.file }}">
+
+    <div class="metadata">
+      {% if let Some(name) = name %}
+      <div class="song__name">{{ name }}</div>
+      {% endif %}
+      {% if let Some(artist) = song.artist %}
+      <div>{{ artist }}</div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="controls">
+    <span
+      hx-post="/previous" hx-swap="none" 
+      class="control material-symbols-outlined" role="button"
+    >skip_previous</span>
+    <span 
+      hx-post="/play" hx-swap="none" 
+      class="control material-symbols-outlined" role="button"
+    >play_arrow</span>
+    <span
+      hx-post="/pause" hx-swap="none" 
+      class="control material-symbols-outlined" role="button"
+    >pause</span>
+    <span 
+      hx-post="/next" hx-swap="none" 
+      class="control material-symbols-outlined" role="button"
+    >skip_next</span>
+  </div>
+</div>
