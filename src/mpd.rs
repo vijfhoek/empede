@@ -4,9 +4,12 @@ use mpdrs::lsinfo::LsInfoResponse;
 
 pub(crate) const HOST: &str = "192.168.1.203:6600";
 
-pub(crate) async fn ls(path: &str) -> anyhow::Result<Vec<Entry>> {
-    let mut mpd = mpdrs::Client::connect(HOST)?;
-    let info = mpd.lsinfo(path)?;
+pub(crate) fn connect() -> Result<mpdrs::Client, mpdrs::error::Error> {
+    mpdrs::Client::connect(HOST)
+}
+
+pub(crate) fn ls(path: &str) -> anyhow::Result<Vec<Entry>> {
+    let info = connect()?.lsinfo(path)?;
 
     fn filename(path: &str) -> Cow<str> {
         std::path::Path::new(path)
@@ -24,12 +27,10 @@ pub(crate) async fn ls(path: &str) -> anyhow::Result<Vec<Entry>> {
                 path: song.file.clone(),
             },
 
-            LsInfoResponse::Directory { path, .. } => {
-                Entry::Directory {
-                    name: filename(path).to_string(),
-                    path: path.to_string(),
-                }
-            }
+            LsInfoResponse::Directory { path, .. } => Entry::Directory {
+                name: filename(path).to_string(),
+                path: path.to_string(),
+            },
 
             LsInfoResponse::Playlist { path, .. } => Entry::Playlist {
                 name: filename(path).to_string(),
@@ -44,8 +45,8 @@ pub(crate) struct QueueItem {
     pub(crate) playing: bool,
 }
 
-pub(crate) async fn playlist() -> anyhow::Result<Vec<QueueItem>> {
-    let mut client = mpdrs::Client::connect(HOST)?;
+pub(crate) fn playlist() -> anyhow::Result<Vec<QueueItem>> {
+    let mut client = connect()?;
 
     let current = client.status()?.song;
 
@@ -57,6 +58,7 @@ pub(crate) async fn playlist() -> anyhow::Result<Vec<QueueItem>> {
             playing: current == song.place,
         })
         .collect();
+
     Ok(queue)
 }
 

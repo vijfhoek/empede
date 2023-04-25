@@ -26,7 +26,7 @@ struct IndexQuery {
 
 async fn index(req: tide::Request<()>) -> tide::Result {
     let query: IndexQuery = req.query()?;
-    let entries = mpd::ls(&query.path).await?;
+    let entries = mpd::ls(&query.path)?;
     let template = IndexTemplate {
         path: Path::new(&query.path)
             .iter()
@@ -44,7 +44,7 @@ struct QueueTemplate {
 }
 
 async fn get_queue(_req: tide::Request<()>) -> tide::Result {
-    let queue = mpd::playlist().await?;
+    let queue = mpd::playlist()?;
     let template = QueueTemplate { queue };
     Ok(template.into())
 }
@@ -55,30 +55,28 @@ struct PostQueueQuery {
 }
 
 async fn post_queue(req: tide::Request<()>) -> tide::Result {
-    let mut client = mpdrs::Client::connect(mpd::HOST)?;
     let query: PostQueueQuery = req.query()?;
-    client.add(&query.path)?;
+    mpd::connect()?.add(&query.path)?;
     Ok("".into())
 }
 
 async fn post_play(_req: tide::Request<()>) -> tide::Result {
-    let mut mpd = mpdrs::Client::connect(mpd::HOST)?;
-    mpd.play()?;
+    mpd::connect()?.play()?;
     Ok("".into())
 }
+
 async fn post_pause(_req: tide::Request<()>) -> tide::Result {
-    let mut mpd = mpdrs::Client::connect(mpd::HOST)?;
-    mpd.pause(true)?;
+    mpd::connect()?.pause(true)?;
     Ok("".into())
 }
+
 async fn post_previous(_req: tide::Request<()>) -> tide::Result {
-    let mut mpd = mpdrs::Client::connect(mpd::HOST)?;
-    mpd.prev()?;
+    mpd::connect()?.prev()?;
     Ok("".into())
 }
+
 async fn post_next(_req: tide::Request<()>) -> tide::Result {
-    let mut mpd = mpdrs::Client::connect(mpd::HOST)?;
-    mpd.next()?;
+    mpd::connect()?.next()?;
     Ok("".into())
 }
 
@@ -97,11 +95,11 @@ async fn sse(_req: tide::Request<()>, sender: tide::sse::Sender) -> tide::Result
 
         buffer.clear();
         reader.read_line(&mut buffer).await?;
-        if buffer == "changed: playlist\n" {
-            sender.send("queue", "", None).await?;
-        } else if buffer == "changed: player\n" {
-            sender.send("player", "", None).await?;
-        }
+        let (_, changed) = buffer
+            .trim_end()
+            .split_once(": ")
+            .ok_or(anyhow!("unexpected response from MPD"))?;
+        sender.send(changed, "", None).await?;
 
         buffer.clear();
         reader.read_line(&mut buffer).await?;
@@ -119,14 +117,18 @@ async fn main() -> tide::Result<()> {
 
     let mut app = tide::new();
     app.with(tide_tracing::TraceMiddleware::new());
+
     app.at("/").get(index);
     app.at("/queue").get(get_queue);
+
+    app.at("/sse").get(tide::sse::endpoint(sse));
+
     app.at("/queue").post(post_queue);
     app.at("/play").post(post_play);
     app.at("/pause").post(post_pause);
     app.at("/previous").post(post_previous);
     app.at("/next").post(post_next);
-    app.at("/sse").get(tide::sse::endpoint(sse));
+
     app.listen("0.0.0.0:8080").await?;
     Ok(())
 }
