@@ -127,18 +127,18 @@ async fn sse(_req: tide::Request<()>, sender: tide::sse::Sender) -> tide::Result
     loop {
         stream.write_all(b"idle playlist player\n").await?;
 
-        buffer.clear();
-        reader.read_line(&mut buffer).await?;
-        let (_, changed) = buffer
-            .trim_end()
-            .split_once(": ")
-            .ok_or(anyhow!("unexpected response from MPD"))?;
-        sender.send(changed, "", None).await?;
+        loop {
+            buffer.clear();
+            reader.read_line(&mut buffer).await?;
+            if buffer == "OK\n" {
+                break;
+            }
 
-        buffer.clear();
-        reader.read_line(&mut buffer).await?;
-        if buffer != "OK\n" {
-            Err(anyhow!("mpd didn't return OK"))?;
+            let (_, changed) = buffer
+                .trim_end()
+                .split_once(": ")
+                .ok_or(anyhow!("unexpected response from MPD"))?;
+            sender.send(changed, "", None).await?;
         }
     }
 }

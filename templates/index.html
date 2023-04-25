@@ -187,8 +187,8 @@
     </div>
 
     <div class="player">
-      <div hx-trigger="load,sse:queue,sse:player" hx-get="/current"></div>
-      <div hx-trigger="load,sse:queue,sse:player" hx-get="/queue"></div>
+      <div hx-trigger="load,sse:player" hx-get="/current"></div>
+      <div hx-trigger="load,sse:playlist" hx-get="/queue"></div>
     </div>
   </body>
 </html>
