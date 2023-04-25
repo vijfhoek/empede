@@ -103,9 +103,11 @@
       }
 
       .player .nowplaying {
+        display: flex;
         flex-flow: column;
         background-color: #334;
         border-radius: 0.25rem;
+        height: 9.5rem;
       }
 
       .player .controls {
@@ -124,6 +126,7 @@
         flex-flow: row;
         align-items: center;
         padding: 0.5rem;
+        flex: 1;
       }
 
       .player .albumart {
@@ -137,6 +140,11 @@
 
       .player .metadata {
         flex: 1;
+      }
+
+      .player .idle {
+        font-weight: bold;
+        text-align: center;
       }
     </style>
   </head>
