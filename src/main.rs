@@ -126,6 +126,10 @@ async fn sse(_req: tide::Request<()>, sender: tide::sse::Sender) -> tide::Result
     let mut buffer = String::new();
     reader.read_line(&mut buffer).await?;
 
+    // Update everything on connect
+    sender.send("playlist", "", None).await?;
+    sender.send("player", "", None).await?;
+
     loop {
         stream.write_all(b"idle playlist player\n").await?;
 

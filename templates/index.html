@@ -4,6 +4,7 @@
   <head>
     <title>Empede</title>
     <script src="https://unpkg.com/htmx.org@1.9.0" integrity="sha384-aOxz9UdWG0yBiyrTwPeMibmaoq07/d3a96GCbb9x60f3mOt5zwkjdbcHFnKH8qls" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,1,0" />
 
     <link href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABqklEQVRoQ+2XOy8FURSF720oJRK3U3lfohYahULjF6CU3Erjf0hoJH6BUqeWeIRGId5RoVMpaH1bLpkIkz17ztw5wz7JSiaZvfesddY+j6nXKj7qFedfcwFlO+gO/AcHbhE5pBR6R9ywMvYjrBMt5ALSHHEHFP3qLVR2C90kdpZTnt9SCD3wblnh6ldIp9fACF+Wlgo2XIBiKpOL2B34PmHeQt5Cihko+xzwRewO5GxTbyFvob/cQnKSL4J50ATjoAucgE2wA64S12n5YZcf92Ajz1WiBxa7YDaFzTXvGqC3HRONgG4Iyc/JZMapjEbANsRXMpKX8Ciu0xMQOTeQl5QoHNiAyKpRQBQOHEN+qsoCLiAvW6ZlDJJ0b0n8LceyjR5QbMZIQrbeF2Puj2kWAVtUahlIPJLTb8hLTbEIkFN3z0BknZw1Q15wAVLwEExnICNtMwCeM+SoQi0OSOE+sA/GFF95JWYOyO4VfFgFCBHNXeiJuAVwFpx5u2AeAZ+clniQdSE30VEgpC/BEZAbqThQ2AghoDBymsIuQDNLRca4A0XOrqZ25R14B64XVDFuhNlbAAAAAElFTkSuQmCC" rel="icon" type="image/png">
@@ -140,7 +141,7 @@
     </style>
   </head>
 
-  <body hx-sse="connect:/sse">
+  <body>
     <div class="browser">
       <ul class="breadcrumb">
         <li><a href="?path=">Root</a></li>
@@ -186,9 +187,9 @@
       </ul>
     </div>
 
-    <div class="player">
-      <div hx-trigger="load,sse:player" hx-get="/current"></div>
-      <div hx-trigger="load,sse:playlist" hx-get="/queue"></div>
+    <div class="player" hx-ext="sse" sse-connect="/sse">
+      <div hx-trigger="sse:player" hx-get="/current"></div>
+      <div hx-trigger="sse:playlist,sse:player" hx-get="/queue"></div>
     </div>
   </body>
 </html>
