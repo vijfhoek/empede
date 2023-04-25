@@ -1,11 +1,19 @@
+use std::borrow::Cow;
+
 use mpdrs::lsinfo::LsInfoResponse;
 
 pub(crate) const HOST: &str = "192.168.1.203:6600";
 
 pub(crate) async fn ls(path: &str) -> anyhow::Result<Vec<Entry>> {
-    // TODO mpdrs seems to be the only one to implement lsinfo
     let mut mpd = mpdrs::Client::connect(HOST)?;
     let info = mpd.lsinfo(path)?;
+
+    fn filename(path: &str) -> Cow<str> {
+        std::path::Path::new(path)
+            .file_name()
+            .map(|x| x.to_string_lossy())
+            .unwrap_or(Cow::Borrowed("n/a"))
+    }
 
     Ok(info
         .iter()
@@ -17,19 +25,14 @@ pub(crate) async fn ls(path: &str) -> anyhow::Result<Vec<Entry>> {
             },
 
             LsInfoResponse::Directory { path, .. } => {
-                let filename = std::path::Path::new(&path)
-                    .file_name()
-                    .map(|x| x.to_string_lossy().to_string())
-                    .unwrap_or("n/a".to_string());
-
                 Entry::Directory {
-                    name: filename,
+                    name: filename(path).to_string(),
                     path: path.to_string(),
                 }
             }
 
             LsInfoResponse::Playlist { path, .. } => Entry::Playlist {
-                name: path.to_string(),
+                name: filename(path).to_string(),
                 path: path.to_string(),
             },
         })
