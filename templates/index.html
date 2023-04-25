@@ -170,7 +170,10 @@
         {% for entry in entries %}
         {% match entry %}
         {% when mpd::Entry::Song with { name, path, artist } %}
-        <li hx-post="/queue?path={{path}}" hx-swap="none" role="button" >
+        <li 
+          onclick="(new Image()).src = '/art?path={{path}}'"
+          hx-post="/queue?path={{path}}" hx-swap="none" role="button"
+        >
           <span class="material-symbols-outlined">music_note</span>
           <!-- img src="/art?path={{path}}" -->
           <div class="song">
