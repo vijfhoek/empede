@@ -88,10 +88,9 @@ async fn sse(_req: tide::Request<()>, sender: tide::sse::Sender) -> tide::Result
     let mut reader = BufReader::new(stream.clone());
 
     // skip OK MPD line
-    // TODO check
+    // TODO check if it is indeed OK
     let mut buffer = String::new();
     reader.read_line(&mut buffer).await?;
-    dbg!(&buffer);
 
     loop {
         stream.write_all(b"idle playlist player\n").await?;
