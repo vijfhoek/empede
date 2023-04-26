@@ -16,6 +16,11 @@ mod mpd;
 struct IndexTemplate {
     path: Vec<String>,
     entries: Vec<mpd::Entry>,
+
+    song: Option<mpdrs::Song>,
+    name: Option<String>,
+
+    queue: Vec<mpd::QueueItem>,
 }
 
 #[derive(Deserialize, Default)]
@@ -27,12 +32,28 @@ struct IndexQuery {
 async fn index(req: tide::Request<()>) -> tide::Result {
     let query: IndexQuery = req.query()?;
     let entries = mpd::ls(&query.path)?;
+    let queue = mpd::playlist()?;
+
+    // TODO dry
+    let mut mpd = mpd::connect()?;
+    let song = mpd.currentsong()?;
+
+    let name = if let Some(song) = &song {
+        let name = song.title.as_ref().unwrap_or(&song.file).to_string();
+        Some(name)
+    } else {
+        None
+    };
+
     let template = IndexTemplate {
         path: Path::new(&query.path)
             .iter()
             .map(|s| s.to_string_lossy().to_string())
             .collect(),
         entries,
+        name,
+        song,
+        queue,
     };
     Ok(askama_tide::into_response(&template))
 }
