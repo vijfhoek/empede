@@ -14,9 +14,10 @@ steps:
       - CARGO_HOME=/var/cache/drone/cargo
     commands:
       - apt-get update
-      - apt-get install -y gcc-x86-64-linux-gnu
+      - apt-get install -y gcc-x86-64-linux-gnu binutils-x86-64-linux-gnu
       - rustup target add x86_64-unknown-linux-gnu
       - cargo build --target=x86_64-unknown-linux-gnu --release -j2 --config target.x86_64-unknown-linux-gnu.linker=\"x86_64-linux-gnu-gcc\"
+      - x86_64-linux-gnu-strip target/x86_64-unknown-linux-gnu/release/empede
 
   - name: package
     image: alpine
