@@ -4,7 +4,9 @@
   <div class="current">
     {% if let Some(song) = song %}
     <div class="albumart">
-      <img src="/art?path={{ song.file }}" onerror="this.style.opacity = 0">
+      <a href="/art?path={{ song.file }}" target="_blank">
+        <img src="/art?path={{ song.file }}" onerror="this.style.opacity = 0">
+      </a>
     </div>
     
     <div class="metadata">
