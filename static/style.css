@@ -2,6 +2,10 @@
   box-sizing: border-box;
 }
 
+[role=button] {
+  cursor: pointer;
+}
+
 html {
   height: 100%;
 }
@@ -38,18 +42,35 @@ ul {
   margin: 0;
 }
 
-ul.queue {
+.queue-header {
   margin-top: 1.0rem;
+  display: flex;
+  align-items: center;
+}
+.queue-next {
+  font-weight: bold;
+  flex: 1;
+}
+.queue-clear {
+  font-weight: bold;
+  display: flex;
+  line-height: 24px;
+}
+.queue-clear .material-symbols-outlined {
+  margin-right: 0.25rem;
 }
 
-ul.queue li {
+.queue {
+  margin-top: 0.5rem;
+}
+
+.queue li {
   padding: 0 0.5rem;
   border-radius: .25rem;
   display: flex;
   align-items: center;
 }
-
-ul.queue li.playing {
+.queue li.playing {
   background-color: #334;
 }
 
@@ -152,7 +173,6 @@ ul.dir li .material-symbols-outlined {
 
 .player .control {
   font-size: 40px;
-  cursor: pointer;
 }
 
 .player .current {

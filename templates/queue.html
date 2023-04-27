@@ -1,5 +1,14 @@
 {# Template #}
 <!DOCTYPE html>
+
+<div class="queue-header">
+  <div class="queue-next">Next in queue</div>
+  <div class="queue-clear" role="button" hx-delete="/queue">
+    <span class="material-symbols-outlined">playlist_remove</span>
+    Clear
+  </div>
+</div>
+
 <ul class="queue">
   {% for item in queue %}
   <li {% if item.playing %}class="playing"{% endif %}>

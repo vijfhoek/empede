@@ -94,6 +94,11 @@ async fn post_queue(req: tide::Request<()>) -> tide::Result {
     Ok("".into())
 }
 
+async fn delete_queue(_req: tide::Request<()>) -> tide::Result {
+    mpd::connect()?.clear()?;
+    Ok("".into())
+}
+
 async fn post_play(_req: tide::Request<()>) -> tide::Result {
     mpd::connect()?.play()?;
     Ok("".into())
@@ -182,6 +187,8 @@ async fn main() -> tide::Result<()> {
     app.at("/sse").get(tide::sse::endpoint(sse));
 
     app.at("/queue").post(post_queue);
+    app.at("/queue").delete(delete_queue);
+
     app.at("/play").post(post_play);
     app.at("/pause").post(post_pause);
     app.at("/previous").post(post_previous);
