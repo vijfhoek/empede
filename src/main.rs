@@ -13,9 +13,7 @@ mod mpd;
 
 #[derive(Template)]
 #[template(path = "index.html")]
-struct IndexTemplate {
-    path: String,
-}
+struct IndexTemplate;
 
 #[derive(Deserialize, Default)]
 #[serde(default)]
@@ -23,10 +21,8 @@ struct IndexQuery {
     path: String,
 }
 
-async fn get_index(req: tide::Request<()>) -> tide::Result {
-    let query: IndexQuery = req.query()?;
-    let template = IndexTemplate { path: query.path };
-    Ok(askama_tide::into_response(&template))
+async fn get_index(_req: tide::Request<()>) -> tide::Result {
+    Ok(askama_tide::into_response(&IndexTemplate))
 }
 
 #[derive(Template)]
