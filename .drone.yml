@@ -1,0 +1,40 @@
+kind: pipeline
+type: docker
+name: default
+
+platform:
+  os: linux
+  arch: arm64
+
+steps:
+  - name: build
+    image: rust:latest
+    env:
+      - CARGO_TARGET_DIR=/var/cache/drone/cargo
+      - CARGO_HOME=/var/cache/drone/cargo
+    commands:
+      - apt-get update
+      - apt-get install -y gcc-x86-64-linux-gnu
+      - rustup target add x86_64-unknown-linux-gnu
+      - cargo build --target=x86_64-unknown-linux-gnu --release -j2 --config target.x86_64-unknown-linux-gnu.linker=\"x86_64-linux-gnu-gcc\"
+
+  - name: package
+    image: alpine
+    commands:
+      - apk add --no-cache tar gzip
+      - mkdir empede-x86_64-unknown-linux-gnu
+      - cp -r target/x86_64-unknown-linux-gnu/release/empede static/ README.md empede-x86_64-unknown-linux-gnu
+      - tar czf empede-x86_64-unknown-linux-gnu.tar.gz empede-x86_64-unknown-linux-gnu/ 
+    when:
+      event: tag
+
+  - name: gitea_release
+    image: plugins/gitea-release
+    settings:
+      api_key:
+        from_secret: GITEA_TOKEN
+      base_url: https://git.sijman.nl
+      files:
+        - empede-x86_64-unknown-linux-gnu.tar.gz
+    when:
+      event: tag
