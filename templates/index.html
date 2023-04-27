@@ -186,12 +186,14 @@
   <body hx-ext="sse" sse-connect="/sse">
     <div 
       class="browser" 
-      hx-trigger="load,sse:database" hx-get="/browser?path={{ path }}"
+      hx-trigger="load,sse:database"
+      hx-get="/browser"
+      hx-vals="js:{path: new URLSearchParams(window.location.search).get('path') || ''}"
     ></div>
 
     <div class="player">
-      <div hx-trigger="load,sse:player" hx-get="/player"></div>
-      <div hx-trigger="load,sse:playlist,sse:player" hx-get="/queue"></div>
+      <div hx-trigger="sse:player" hx-get="/player"></div>
+      <div hx-trigger="sse:playlist,sse:player" hx-get="/queue"></div>
     </div>
   </body>
 </html>

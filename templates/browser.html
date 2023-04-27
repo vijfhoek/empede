@@ -2,9 +2,10 @@
 <ul class="breadcrumb">
   <li>
     <a
-      href="/?path=" 
-      hx-replace-url="/?path=" 
-      hx-get="/browser?path=" 
+      href="/" 
+      hx-replace-url="/" 
+      hx-get="/browser" 
+      hx-vals='{"path": ""}'
       hx-target=".browser"
     >Root</a>
   </li>
@@ -16,7 +17,9 @@
     <a
       href="/?path={{ path[..i + 1].join("/") }}" 
       hx-replace-url="/?path={{ path[..i + 1].join("/") }}" 
-      hx-get="/browser?path={{ path[..i + 1].join("/") }}" hx-target=".browser"
+      hx-get="/browser"
+      hx-vals='{"path": "{{ path[..i + 1].join("/") }}"}'
+      hx-target=".browser"
     >{{ component }}</a>
     {% endif %}
   </li>
@@ -37,7 +40,8 @@
   </li>
   {% when mpd::Entry::Directory with { name, path } %}
   <li
-    hx-get="/browser?path={{ path }}"
+    hx-get="/browser"
+    hx-vals='{"path": "{{ path }}"}'
     hx-replace-url="/?path={{ path }}"
     hx-target=".browser"
   >
@@ -45,7 +49,7 @@
     <div class="song__name">{{ name }}</div>
   </li>
   {% when mpd::Entry::Playlist with { name, path } %}
-  <li hx-post="/queue?path={{path}}" hx-swap="none" role="button" >
+  <li hx-post="/queue?path={{ path }}" hx-swap="none" role="button" >
     <span class="material-symbols-outlined">playlist_play</span>
     <div class="song">
       <div class="song__name">{{ name }}</div>
