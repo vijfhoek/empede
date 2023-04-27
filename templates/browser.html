@@ -26,11 +26,17 @@
   {% endfor %}
 </ul>
 
-<ul class="dir" hx-boost="true">
+<ul class="dir" hx-boost="true" tabindex="-1">
   {% for entry in entries %}
   {% match entry %}
   {% when mpd::Entry::Song with { name, path, artist } %}
-  <li hx-post="/queue?path={{path}}" hx-swap="none" role="button">
+  <li 
+    hx-post="/queue?path={{path}}"
+    hx-trigger="click,keyup[key=='Enter']"
+    hx-swap="none" 
+    role="button"
+    tabindex="0"
+  >
     <span class="material-symbols-outlined" title="Song">music_note</span>
     <div class="albumart">
       <img src="/art?path={{path}}" onerror="this.style.visibility = 'hidden'">
@@ -49,7 +55,11 @@
     role="link"
   >
     <span class="material-symbols-outlined" title="Directory">folder</span>
-    <div class="song__name">{{ name }}</div>
+    <div class="song__name">
+      <a href="/?path={{ path }}" hx-get="/browser" hx-sync="closest li:abort">
+        {{ name }}
+      </a>
+    </div>
   </li>
   {% when mpd::Entry::Playlist with { name, path } %}
   <li hx-post="/queue?path={{ path }}" hx-swap="none" role="button" >

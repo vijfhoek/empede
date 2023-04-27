@@ -36,22 +36,22 @@
     {% endif %}
   </div>
 
-  <div class="controls">
-    <span
-      hx-post="/previous" hx-swap="none" 
+  <div class="controls" hx-swap="none" hx-trigger="click,keyUp[key=='Enter']">
+    <button
+      hx-post="/previous"
       class="control material-symbols-outlined" role="button" title="Previous track"
-    >skip_previous</span>
-    <span 
-      hx-post="/play" hx-swap="none" 
+    >skip_previous</button>
+    <button 
+      hx-post="/play"
       class="control material-symbols-outlined" role="button" title="Play"
-    >play_arrow</span>
-    <span
-      hx-post="/pause" hx-swap="none" 
+    >play_arrow</button>
+    <button
+      hx-post="/pause"
       class="control material-symbols-outlined" role="button" title="Pause"
-    >pause</span>
-    <span 
-      hx-post="/next" hx-swap="none" 
+    >pause</button>
+    <button 
+      hx-post="/next"
       class="control material-symbols-outlined" role="button" title="Next track"
-    >skip_next</span>
+    >skip_next</button>
   </div>
 </div>
