@@ -191,6 +191,8 @@ async fn main() -> tide::Result<()> {
     app.at("/previous").post(post_previous);
     app.at("/next").post(post_next);
 
+    app.at("/static").serve_dir("static/")?;
+
     app.listen("0.0.0.0:8080").await?;
     Ok(())
 }

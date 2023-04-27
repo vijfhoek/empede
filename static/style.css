@@ -1,0 +1,170 @@
+html {
+  height: 100%;
+}
+
+body {
+  font-family: sans;
+  background-color: #112;
+  color: #fff;
+  display: flex;
+  margin: 0;
+  height: 100%;
+}
+
+body > div {
+  padding: 1rem;
+}
+
+.browser {
+  flex: 1;
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+}
+
+a {
+  color: #fff;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+ul.queue {
+  margin-top: 1.0rem;
+}
+
+ul.queue li {
+  padding: 0 0.5rem;
+  border-radius: .25rem;
+  display: flex;
+  align-items: center;
+}
+
+ul.queue li.playing {
+  background-color: #334;
+}
+
+ul.breadcrumb {
+  display: flex;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  list-style: none;
+  background-color: #334;
+  border-radius: .25rem;
+  padding: .75rem 1rem;
+}
+
+ul.breadcrumb li:not(:first-child)::before {
+  display: inline-block;
+  padding-left: .5rem;
+  padding-right: .1rem;
+  color: #6c757d;
+  content: "/";
+}
+
+ul.dir {
+  overflow: auto;
+  flex: 1;
+}
+
+ul.dir li {
+  cursor: pointer;
+  padding: .75rem .75rem;
+  border-radius: 3px;
+
+  display: flex;
+  align-items: center;
+}
+
+ul.dir li img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+}
+
+ul.dir li:hover {
+  background-color: #334;
+}
+
+ul.dir li .material-symbols-outlined {
+  margin-right: 0.75rem;
+  width: 24px;
+}
+
+.song__name {
+  font-weight: bold;
+}
+
+.albumart {
+  border-radius: 0.25rem;
+}
+
+.queue .albumart {
+  margin: 0.75rem;
+  margin-left: 0;
+  width: 48px;
+  height: 48px;
+}
+
+.albumart img {
+  border-radius: 0.25rem;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player {
+  width: 25rem;
+}
+
+.player .nowplaying {
+  display: flex;
+  flex-flow: column;
+  background-color: #334;
+  border-radius: 0.25rem;
+  height: 9.5rem;
+}
+
+.player .controls {
+  display: flex;
+  justify-content: space-around;
+  padding: 0.5rem;
+}
+
+.player .control {
+  font-size: 40px;
+  cursor: pointer;
+}
+
+.player .current {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  padding: 0.5rem;
+  flex: 1;
+}
+
+.nowplaying .albumart {
+  margin-right: 1.0rem;
+  background-color: #445;
+  width: 80px;
+  height: 80px;
+  transition: transform 200ms ease-in-out;
+}
+.nowplaying .albumart:hover {
+  transform: scale(1.05);
+}
+
+.nowplaying .metadata {
+  flex: 1;
+}
+
+.nowplaying .idle {
+  font-weight: bold;
+  text-align: center;
+}
