@@ -96,12 +96,6 @@ ul.dir li {
   align-items: center;
 }
 
-ul.dir li img {
-  width: 48px;
-  height: 48px;
-  object-fit: cover;
-}
-
 ul.dir li:hover {
   background-color: #334;
 }
@@ -117,13 +111,18 @@ ul.dir li .material-symbols-outlined {
 
 .albumart {
   border-radius: 0.25rem;
+  background-color: #445;
+  width: 48px;
+  height: 48px;
 }
 
 .queue .albumart {
   margin: 0.75rem;
   margin-left: 0;
-  width: 48px;
-  height: 48px;
+}
+
+.browser .albumart {
+  margin-right: 0.75rem;
 }
 
 .albumart img {
@@ -166,7 +165,6 @@ ul.dir li .material-symbols-outlined {
 
 .nowplaying .albumart {
   margin-right: 1.0rem;
-  background-color: #445;
   width: 80px;
   height: 80px;
   transition: transform 200ms ease-in-out;
