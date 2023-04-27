@@ -31,7 +31,7 @@
   {% match entry %}
   {% when mpd::Entry::Song with { name, path, artist } %}
   <li hx-post="/queue?path={{path}}" hx-swap="none" role="button">
-    <span class="material-symbols-outlined">music_note</span>
+    <span class="material-symbols-outlined" title="Song">music_note</span>
     <div class="albumart">
       <img src="/art?path={{path}}" onerror="this.style.visibility = 'hidden'">
     </div>
@@ -48,12 +48,12 @@
     hx-target=".browser"
     role="link"
   >
-    <span class="material-symbols-outlined">folder</span>
+    <span class="material-symbols-outlined" title="Directory">folder</span>
     <div class="song__name">{{ name }}</div>
   </li>
   {% when mpd::Entry::Playlist with { name, path } %}
   <li hx-post="/queue?path={{ path }}" hx-swap="none" role="button" >
-    <span class="material-symbols-outlined">playlist_play</span>
+    <span class="material-symbols-outlined" title="Playlist">playlist_play</span>
     <div class="song">
       <div class="song__name">{{ name }}</div>
     </a>

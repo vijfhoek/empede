@@ -13,12 +13,17 @@
   {% for item in queue %}
   <li {% if item.playing %}class="playing"{% endif %}>
     <div class="albumart">
-      <img src="/art?path={{ item.file }}" onerror="this.style.opacity = 0">
+      <img
+        src="/art?path={{ item.file }}"
+        onerror="this.style.opacity = 0"
+        alt="Album art"
+        title="Album art"
+      >
     </div>
     <div class="metadata">
-      <div class="song__name">{{ item.title }}</div>
+      <div class="song__name" title="Song name">{{ item.title }}</div>
       {% if let Some(artist) = item.artist %}
-      <div class="song__artist">{{ artist }}</div>
+      <div class="song__artist" title="Artist">{{ artist }}</div>
       {% endif %}
     </div>
   </li>

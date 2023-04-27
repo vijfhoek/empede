@@ -12,16 +12,21 @@
     {% if let Some(song) = song %}
     <div class="albumart">
       <a href="/art?path={{ song.file }}" target="_blank">
-        <img src="/art?path={{ song.file }}" onerror="this.style.opacity = 0">
+        <img 
+          src="/art?path={{ song.file }}"
+          onerror="this.style.opacity = 0"
+          alt="Album art"
+          title="Album art"
+        >
       </a>
     </div>
     
     <div class="metadata">
       {% if let Some(name) = name %}
-      <div class="song__name">{{ name }}</div>
+      <div class="song__name" title="Song name">{{ name }}</div>
       {% endif %}
       {% if let Some(artist) = song.artist %}
-      <div>{{ artist }}</div>
+      <div class="song__artist" title="Artist">{{ artist }}</div>
       {% endif %}
     </div>
     {% else %}
@@ -34,19 +39,19 @@
   <div class="controls">
     <span
       hx-post="/previous" hx-swap="none" 
-      class="control material-symbols-outlined" role="button"
+      class="control material-symbols-outlined" role="button" title="Previous track"
     >skip_previous</span>
     <span 
       hx-post="/play" hx-swap="none" 
-      class="control material-symbols-outlined" role="button"
+      class="control material-symbols-outlined" role="button" title="Play"
     >play_arrow</span>
     <span
       hx-post="/pause" hx-swap="none" 
-      class="control material-symbols-outlined" role="button"
+      class="control material-symbols-outlined" role="button" title="Pause"
     >pause</span>
     <span 
       hx-post="/next" hx-swap="none" 
-      class="control material-symbols-outlined" role="button"
+      class="control material-symbols-outlined" role="button" title="Next track"
     >skip_next</span>
   </div>
 </div>
