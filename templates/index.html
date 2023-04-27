@@ -184,17 +184,14 @@
   </head>
 
   <body hx-ext="sse" sse-connect="/sse">
-    <div class="browser" hx-trigger="sse:database" hx-get="/browser">
-      {% include "browser.html" %}
-    </div>
+    <div 
+      class="browser" 
+      hx-trigger="load,sse:database" hx-get="/browser?path={{ path }}"
+    ></div>
 
     <div class="player">
-      <div hx-trigger="sse:player" hx-get="/player">
-        {% include "player.html" %}
-      </div>
-      <div hx-trigger="sse:playlist,sse:player" hx-get="/queue">
-        {% include "queue.html" %}
-      </div>
+      <div hx-trigger="load,sse:player" hx-get="/player"></div>
+      <div hx-trigger="load,sse:playlist,sse:player" hx-get="/queue"></div>
     </div>
   </body>
 </html>

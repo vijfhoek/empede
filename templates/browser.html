@@ -1,14 +1,23 @@
 {# #}
 <ul class="breadcrumb">
-  <li><a href="?path=">Root</a></li>
+  <li>
+    <a
+      href="/?path=" 
+      hx-replace-url="/?path=" 
+      hx-get="/browser?path=" 
+      hx-target=".browser"
+    >Root</a>
+  </li>
   {% for (i, component) in path.iter().enumerate() %}
   <li>
     {% if i == path.len() - 1 %}
     {{ component }}
     {% else %}
-    <a href="?path={{ path[..i + 1].join("/") }}">
-      {{ component }}
-    </a>
+    <a
+      href="/?path={{ path[..i + 1].join("/") }}" 
+      hx-replace-url="/?path={{ path[..i + 1].join("/") }}" 
+      hx-get="/browser?path={{ path[..i + 1].join("/") }}" hx-target=".browser"
+    >{{ component }}</a>
     {% endif %}
   </li>
   {% endfor %}
@@ -26,10 +35,14 @@
       <div class="song__artist">{{ artist }}</div>
     </a>
   </li>
-  {% when mpd::Entry::Directory with { name, path }%}
-  <li onclick="window.location = '?path={{path}}'">
+  {% when mpd::Entry::Directory with { name, path } %}
+  <li
+    hx-get="/browser?path={{ path }}"
+    hx-replace-url="/?path={{ path }}"
+    hx-target=".browser"
+  >
     <span class="material-symbols-outlined">folder</span>
-    <a href="?path={{path}}">{{ name }}</a>
+    <div class="song__name">{{ name }}</div>
   </li>
   {% when mpd::Entry::Playlist with { name, path } %}
   <li hx-post="/queue?path={{path}}" hx-swap="none" role="button" >
