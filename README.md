@@ -3,6 +3,15 @@
 
 ![Screenshot](screenshots/screenshot.webp)
 
+## Configuration
+Empede is configured using environment variables:
+
+| Name        | Default      | Description                       |
+| ----------- | ------------ | --------------------------------- |
+| MPD_HOST    | localhost    | MPD server host                   |
+| MPD_PORT    | 6600         | MPD server port                   |
+| EMPEDE_BIND | 0.0.0.0:8080 | Address for Empede to bind to     |
+
 ## Running
 ### Linux
 1. Download and extract the [latest release](https://git.sijman.nl/_/empede/releases)

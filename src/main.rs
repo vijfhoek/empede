@@ -196,6 +196,8 @@ async fn main() -> tide::Result<()> {
 
     app.at("/static").serve_dir("static/")?;
 
-    app.listen("0.0.0.0:8080").await?;
+    let bind = std::env::var("EMPEDE_BIND").unwrap_or("0.0.0.0:8080".to_string());
+    app.listen(bind).await?;
+
     Ok(())
 }
