@@ -5,7 +5,7 @@
 
 ## Running
 ### Linux
-1. Download the [latest release](https://git.sijman.nl/_/empede/releases)
+1. Download and extract the [latest release](https://git.sijman.nl/_/empede/releases)
 2. Run `./empede` (To specify a host and port, run `MPD_HOST=ip MPD_PORT=6600 ./empede`)
 3. Go to http://localhost:8080
 
