@@ -1,5 +1,12 @@
 {# #}
 <!DOCTYPE html>
+<script>
+  {% if let Some(name) = name %}
+  document.title = "{{ name }} - Empede";
+  {% else %}
+  document.title = "Empede";
+  {% endif %}
+</script>
 <div class="nowplaying">
   <div class="current">
     {% if let Some(song) = song %}
