@@ -18,6 +18,11 @@ body {
   margin: 0;
   height: 100%;
 }
+@media (prefers-contrast: more) {
+  body {
+    background-color: black;
+  }
+}
 
 body > div {
   padding: 1rem;
@@ -34,6 +39,14 @@ a {
   color: #fff;
   font-weight: bold;
   text-decoration: none;
+}
+@media (prefers-contrast: more) {
+  a,
+  [role=button],
+  [role=link] {
+    color: #99f;
+    text-decoration: underline;
+  }
 }
 
 ul {
@@ -70,8 +83,15 @@ ul {
   display: flex;
   align-items: center;
 }
+
 .queue li.playing {
   background-color: #334;
+}
+@media (prefers-contrast: more) {
+  .queue li.playing {
+    background-color: black;
+    border: 2px solid white;
+  }
 }
 
 .queue .metadata {
@@ -93,6 +113,12 @@ ul.breadcrumb {
   background-color: #334;
   border-radius: .25rem;
   padding: .75rem 1rem;
+}
+@media (prefers-contrast: more) {
+  ul.breadcrumb {
+    background-color: black;
+    border: 2px solid white;
+  }
 }
 
 ul.breadcrumb li:not(:first-child)::before {
@@ -163,6 +189,12 @@ ul.dir li .material-symbols-outlined {
   background-color: #334;
   border-radius: 0.25rem;
   height: 9.5rem;
+}
+@media (prefers-contrast: more) {
+  .player .nowplaying {
+    background-color: black;
+    border: 2px solid white;
+  }
 }
 
 .player .controls {
