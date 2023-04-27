@@ -32,7 +32,9 @@
   {% when mpd::Entry::Song with { name, path, artist } %}
   <li hx-post="/queue?path={{path}}" hx-swap="none" role="button">
     <span class="material-symbols-outlined">music_note</span>
-    <!-- img src="/art?path={{path}}" -->
+    <div class="albumart">
+      <img src="/art?path={{path}}" onerror="this.style.visibility = 'hidden'">
+    </div>
     <div class="song">
       <div class="song__name">{{ name }}</div>
       <div class="song__artist">{{ artist }}</div>

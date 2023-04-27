@@ -4,7 +4,7 @@
   {% for item in queue %}
   <li {% if item.playing %}class="playing"{% endif %}>
     <div class="albumart">
-      <img src="/art?path={{ item.file }}">
+      <img src="/art?path={{ item.file }}" onerror="this.style.opacity = 0">
     </div>
     <div class="metadata">
       <div class="song__name">{{ item.title }}</div>
