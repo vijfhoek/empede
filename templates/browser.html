@@ -1,0 +1,43 @@
+{# #}
+<ul class="breadcrumb">
+  <li><a href="?path=">Root</a></li>
+  {% for (i, component) in path.iter().enumerate() %}
+  <li>
+    {% if i == path.len() - 1 %}
+    {{ component }}
+    {% else %}
+    <a href="?path={{ path[..i + 1].join("/") }}">
+      {{ component }}
+    </a>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+
+<ul class="dir" hx-boost="true">
+  {% for entry in entries %}
+  {% match entry %}
+  {% when mpd::Entry::Song with { name, path, artist } %}
+  <li hx-post="/queue?path={{path}}" hx-swap="none" role="button">
+    <span class="material-symbols-outlined">music_note</span>
+    <!-- img src="/art?path={{path}}" -->
+    <div class="song">
+      <div class="song__name">{{ name }}</div>
+      <div class="song__artist">{{ artist }}</div>
+    </a>
+  </li>
+  {% when mpd::Entry::Directory with { name, path }%}
+  <li onclick="window.location = '?path={{path}}'">
+    <span class="material-symbols-outlined">folder</span>
+    <a href="?path={{path}}">{{ name }}</a>
+  </li>
+  {% when mpd::Entry::Playlist with { name, path } %}
+  <li hx-post="/queue?path={{path}}" hx-swap="none" role="button" >
+    <span class="material-symbols-outlined">playlist_play</span>
+    <div class="song">
+      <div class="song__name">{{ name }}</div>
+    </a>
+  </li>
+  {% endmatch %}
+  {% endfor %}
+</ul>

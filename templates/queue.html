@@ -3,7 +3,15 @@
 <ul class="queue">
   {% for item in queue %}
   <li {% if item.playing %}class="playing"{% endif %}>
-    <input type="checkbox" /> {{ item.title }}
+    <div class="albumart">
+      <img src="/art?path={{ item.file }}">
+    </div>
+    <div class="metadata">
+      <div class="song__name">{{ item.title }}</div>
+      {% if let Some(artist) = item.artist %}
+      <div class="song__artist">{{ artist }}</div>
+      {% endif %}
+    </div>
   </li>
   {% endfor %}
 </ul>

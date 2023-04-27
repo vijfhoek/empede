@@ -10,12 +10,17 @@
     <link href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABqklEQVRoQ+2XOy8FURSF720oJRK3U3lfohYahULjF6CU3Erjf0hoJH6BUqeWeIRGId5RoVMpaH1bLpkIkz17ztw5wz7JSiaZvfesddY+j6nXKj7qFedfcwFlO+gO/AcHbhE5pBR6R9ywMvYjrBMt5ALSHHEHFP3qLVR2C90kdpZTnt9SCD3wblnh6ldIp9fACF+Wlgo2XIBiKpOL2B34PmHeQt5Cihko+xzwRewO5GxTbyFvob/cQnKSL4J50ATjoAucgE2wA64S12n5YZcf92Ajz1WiBxa7YDaFzTXvGqC3HRONgG4Iyc/JZMapjEbANsRXMpKX8Ciu0xMQOTeQl5QoHNiAyKpRQBQOHEN+qsoCLiAvW6ZlDJJ0b0n8LceyjR5QbMZIQrbeF2Puj2kWAVtUahlIPJLTb8hLTbEIkFN3z0BknZw1Q15wAVLwEExnICNtMwCeM+SoQi0OSOE+sA/GFF95JWYOyO4VfFgFCBHNXeiJuAVwFpx5u2AeAZ+clniQdSE30VEgpC/BEZAbqThQ2AghoDBymsIuQDNLRca4A0XOrqZ25R14B64XVDFuhNlbAAAAAElFTkSuQmCC" rel="icon" type="image/png">
 
     <style>
+      html {
+        height: 100%;
+      }
+
       body {
         font-family: sans;
         background-color: #112;
         color: #fff;
         display: flex;
         margin: 0;
+        height: 100%;
       }
 
       body > div {
@@ -24,6 +29,9 @@
 
       .browser {
         flex: 1;
+        display: flex;
+        flex-flow: column;
+        height: 100%;
       }
 
       a {
@@ -43,13 +51,14 @@
       }
 
       ul.queue li {
-        padding: 1.0rem 0.75rem;
+        padding: 0 0.5rem;
         border-radius: .25rem;
+        display: flex;
+        align-items: center;
       }
 
       ul.queue li.playing {
         background-color: #334;
-        font-weight: bold;
       }
 
       ul.breadcrumb {
@@ -70,6 +79,11 @@
         content: "/";
       }
 
+      ul.dir {
+        overflow: auto;
+        flex: 1;
+      }
+
       ul.dir li {
         cursor: pointer;
         padding: .75rem .75rem;
@@ -82,7 +96,7 @@
       ul.dir li img {
         width: 48px;
         height: 48px;
-        object-fit: contain;
+        object-fit: cover;
       }
 
       ul.dir li:hover {
@@ -96,6 +110,24 @@
 
       .song__name {
         font-weight: bold;
+      }
+
+      .albumart {
+        border-radius: 0.25rem;
+      }
+
+      .queue .albumart {
+        margin: 0.75rem;
+        margin-left: 0;
+        width: 48px;
+        height: 48px;
+      }
+
+      .albumart img {
+        border-radius: 0.25rem;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
       }
 
       .player {
@@ -129,78 +161,36 @@
         flex: 1;
       }
 
-      .player .albumart {
+      .nowplaying .albumart {
+        margin-right: 1.0rem;
+        background-color: #445;
         width: 80px;
         height: 80px;
-        object-fit: contain;
-        display: block;
-        margin-right: 1.0rem;
-        border-radius: 0.25rem;
       }
 
-      .player .metadata {
+      .nowplaying .metadata {
         flex: 1;
       }
 
-      .player .idle {
+      .nowplaying .idle {
         font-weight: bold;
         text-align: center;
       }
     </style>
   </head>
 
-  <body>
-    <div class="browser">
-      <ul class="breadcrumb">
-        <li><a href="?path=">Root</a></li>
-        {% for (i, component) in path.iter().enumerate() %}
-        <li>
-          {% if i == path.len() - 1 %}
-          {{ component }}
-          {% else %}
-          <a href="?path={{ path[..i + 1].join("/") }}">
-            {{ component }}
-          </a>
-          {% endif %}
-        </li>
-        {% endfor %}
-      </ul>
-
-      <ul class="dir">
-        {% for entry in entries %}
-        {% match entry %}
-        {% when mpd::Entry::Song with { name, path, artist } %}
-        <li 
-          onclick="(new Image()).src = '/art?path={{path}}'"
-          hx-post="/queue?path={{path}}" hx-swap="none" role="button"
-        >
-          <span class="material-symbols-outlined">music_note</span>
-          <!-- img src="/art?path={{path}}" -->
-          <div class="song">
-            <div class="song__name">{{ name }}</div>
-            <div class="song__artist">{{ artist }}</div>
-          </a>
-        </li>
-        {% when mpd::Entry::Directory with { name, path }%}
-        <li onclick="window.location = '?path={{path}}'">
-          <span class="material-symbols-outlined">folder</span>
-          <a href="?path={{path}}">{{ name }}</a>
-        </li>
-        {% when mpd::Entry::Playlist with { name, path } %}
-        <li hx-post="/queue?path={{path}}" hx-swap="none" role="button" >
-          <span class="material-symbols-outlined">playlist_play</span>
-          <div class="song">
-            <div class="song__name">{{ name }}</div>
-          </a>
-        </li>
-        {% endmatch %}
-        {% endfor %}
-      </ul>
+  <body hx-ext="sse" sse-connect="/sse">
+    <div class="browser" hx-trigger="sse:database" hx-get="/browser">
+      {% include "browser.html" %}
     </div>
 
-    <div class="player" hx-ext="sse" sse-connect="/sse">
-      <div hx-trigger="sse:player" hx-get="/player"></div>
-      <div hx-trigger="sse:playlist,sse:player" hx-get="/queue"></div>
+    <div class="player">
+      <div hx-trigger="sse:player" hx-get="/player">
+        {% include "player.html" %}
+      </div>
+      <div hx-trigger="sse:playlist,sse:player" hx-get="/queue">
+        {% include "queue.html" %}
+      </div>
     </div>
   </body>
 </html>

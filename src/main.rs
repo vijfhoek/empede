@@ -29,7 +29,7 @@ struct IndexQuery {
     path: String,
 }
 
-async fn index(req: tide::Request<()>) -> tide::Result {
+async fn get_index(req: tide::Request<()>) -> tide::Result {
     let query: IndexQuery = req.query()?;
     let entries = mpd::ls(&query.path)?;
     let queue = mpd::playlist()?;
@@ -94,6 +94,28 @@ async fn get_player(_req: tide::Request<()>) -> tide::Result {
     Ok(template.into())
 }
 
+#[derive(Template)]
+#[template(path = "browser.html")]
+struct BrowserTemplate {
+    path: Vec<String>,
+    entries: Vec<mpd::Entry>,
+}
+
+async fn get_browser(req: tide::Request<()>) -> tide::Result {
+    let query: IndexQuery = req.query()?;
+    let entries = mpd::ls(&query.path)?;
+
+    let template = BrowserTemplate {
+        path: Path::new(&query.path)
+            .iter()
+            .map(|s| s.to_string_lossy().to_string())
+            .collect(),
+        entries,
+    };
+
+    Ok(template.into())
+}
+
 #[derive(Deserialize)]
 struct PostQueueQuery {
     path: String,
@@ -139,7 +161,7 @@ async fn get_art(req: tide::Request<()>) -> tide::Result {
 
 async fn sse(_req: tide::Request<()>, sender: tide::sse::Sender) -> tide::Result<()> {
     // Needs to be async and all async mpd libraries suck
-    let mut stream = TcpStream::connect(mpd::HOST).await?;
+    let mut stream = TcpStream::connect(mpd::host()).await?;
     let mut reader = BufReader::new(stream.clone());
 
     // skip OK MPD line
@@ -152,7 +174,7 @@ async fn sse(_req: tide::Request<()>, sender: tide::sse::Sender) -> tide::Result
     sender.send("player", "", None).await?;
 
     loop {
-        stream.write_all(b"idle playlist player\n").await?;
+        stream.write_all(b"idle playlist player database\n").await?;
 
         loop {
             buffer.clear();
@@ -179,10 +201,11 @@ async fn main() -> tide::Result<()> {
     let mut app = tide::new();
     app.with(tide_tracing::TraceMiddleware::new());
 
-    app.at("/").get(index);
+    app.at("/").get(get_index);
     app.at("/queue").get(get_queue);
     app.at("/player").get(get_player);
     app.at("/art").get(get_art);
+    app.at("/browser").get(get_browser);
 
     app.at("/sse").get(tide::sse::endpoint(sse));
 

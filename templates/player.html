@@ -3,12 +3,10 @@
 <div class="nowplaying">
   <div class="current">
     {% if let Some(song) = song %}
-    <img 
-      class="albumart"
-      src="/art?path={{ song.file }}" 
-      onerror="this.style.opacity = 0"
-    >
-
+    <div class="albumart">
+      <img src="/art?path={{ song.file }}" onerror="this.style.opacity = 0">
+    </div>
+    
     <div class="metadata">
       {% if let Some(name) = name %}
       <div class="song__name">{{ name }}</div>

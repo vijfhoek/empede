@@ -2,10 +2,14 @@ use std::borrow::Cow;
 
 use mpdrs::lsinfo::LsInfoResponse;
 
-pub(crate) const HOST: &str = "192.168.1.203:6600";
+pub(crate) fn host() -> String {
+    let host = std::env::var("MPD_HOST").unwrap_or("localhost".to_string());
+    let port = std::env::var("MPD_PORT").unwrap_or("6600".to_string());
+    format!("{host}:{port}")
+}
 
 pub(crate) fn connect() -> Result<mpdrs::Client, mpdrs::error::Error> {
-    mpdrs::Client::connect(HOST)
+    mpdrs::Client::connect(host())
 }
 
 pub(crate) fn ls(path: &str) -> anyhow::Result<Vec<Entry>> {
@@ -41,7 +45,9 @@ pub(crate) fn ls(path: &str) -> anyhow::Result<Vec<Entry>> {
 }
 
 pub(crate) struct QueueItem {
+    pub(crate) file: String,
     pub(crate) title: String,
+    pub(crate) artist: Option<String>,
     pub(crate) playing: bool,
 }
 
@@ -54,7 +60,9 @@ pub(crate) fn playlist() -> anyhow::Result<Vec<QueueItem>> {
         .queue()?
         .into_iter()
         .map(|song| QueueItem {
+            file: song.file.clone(),
             title: song.title.as_ref().unwrap_or(&song.file).clone(),
+            artist: song.artist.clone(),
             playing: current == song.place,
         })
         .collect();
