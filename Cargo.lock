@@ -673,8 +673,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "212d0f5754cb6769937f4501cc0e67f4f4483c8d2c3e1e922ee9edbe4ab4c7c0"
 
 [[package]]
-name = "empede-tide"
-version = "0.1.0"
+name = "empede"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "askama",
