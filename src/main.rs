@@ -87,7 +87,7 @@ async fn get_player(_req: tide::Request<()>) -> tide::Result {
     };
 
     if let Some(song) = song {
-        let name = song.title.unwrap_or(song.file.clone()).to_string();
+        let name = song.title.unwrap_or(song.file);
         template.name = Some(name);
     }
 
@@ -150,8 +150,13 @@ async fn post_next(_req: tide::Request<()>) -> tide::Result {
 async fn get_art(req: tide::Request<()>) -> tide::Result {
     let query: IndexQuery = req.query()?;
     let resp = if let Ok(art) = mpd::connect()?.albumart(&query.path) {
+        let mime = infer::get(&art)
+            .map(|k| k.mime_type())
+            .unwrap_or("application/octet-stream");
+
         tide::Response::builder(tide::StatusCode::Ok)
             .body(art)
+            .content_type(mime)
             .header("cache-control", "max-age=3600")
     } else {
         tide::Response::builder(tide::StatusCode::NotFound)
