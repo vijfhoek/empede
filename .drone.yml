@@ -13,7 +13,7 @@ steps:
       - CARGO_TARGET_DIR=/var/cache/drone/cargo
       - CARGO_HOME=/var/cache/drone/cargo
     commands:
-      - cargo build --release -j2
+      - cargo build --release
       - strip target/release/empede
 
   - name: build-x86_64-unknown-linux-gnu
@@ -22,7 +22,7 @@ steps:
       - apt-get update
       - apt-get install -y gcc-x86-64-linux-gnu binutils-x86-64-linux-gnu
       - rustup target add x86_64-unknown-linux-gnu
-      - cargo build --target=x86_64-unknown-linux-gnu --release -j2 --config target.x86_64-unknown-linux-gnu.linker=\"x86_64-linux-gnu-gcc\"
+      - cargo build --target=x86_64-unknown-linux-gnu --release --config target.x86_64-unknown-linux-gnu.linker=\"x86_64-linux-gnu-gcc\"
       - x86_64-linux-gnu-strip target/x86_64-unknown-linux-gnu/release/empede
     when:
       event: tag
@@ -32,7 +32,7 @@ steps:
     commands:
       - apt-get update && apt-get install -y mingw-w64
       - rustup target add x86_64-pc-windows-gnu
-      - cargo build --target=x86_64-pc-windows-gnu --release -j2 --config target.x86_64-pc-windows-gnu.linker=\"x86_64-w64-mingw32-gcc\"
+      - cargo build --target=x86_64-pc-windows-gnu --release --config target.x86_64-pc-windows-gnu.linker=\"x86_64-w64-mingw32-gcc\"
       - x86_64-w64-mingw32-strip target/x86_64-pc-windows-gnu/release/empede.exe
     when:
       event: tag
