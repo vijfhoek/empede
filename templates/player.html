@@ -64,6 +64,7 @@
   document.title = "Empede";
   {% endif %}
 
+  {% if state == mpdrs::State::Play %}
   progressBar = document.querySelector(".nowplaying .progress");
   elapsed = {{ elapsed }};
   duration = {{ duration }};
@@ -77,4 +78,5 @@
     let progress = elapsed / duration;
     progressBar.style.width = `${progress * 100}%`;
   }, 1000);
+  {% endif %}
 </script>
