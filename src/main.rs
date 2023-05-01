@@ -37,17 +37,24 @@ struct PlayerTemplate {
     song: Option<mpdrs::Song>,
     name: Option<String>,
     state: mpdrs::State,
+    elapsed: f32,
+    duration: f32,
 }
 
 async fn get_player(_req: tide::Request<()>) -> tide::Result {
     let mut mpd = mpd::connect()?;
     let song = mpd.currentsong()?;
-    let state = mpd.status()?.state;
+    let status = mpd.status()?;
+
+    let elapsed = status.elapsed.map(|d| d.as_secs_f32()).unwrap_or(0.0);
+    let duration = status.duration.map(|d| d.as_secs_f32()).unwrap_or(0.0);
 
     let mut template = PlayerTemplate {
         song: song.clone(),
         name: None,
-        state,
+        state: status.state,
+        elapsed,
+        duration,
     };
 
     if let Some(song) = song {

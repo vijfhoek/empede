@@ -1,12 +1,6 @@
 {# #}
 <!DOCTYPE html>
-<script>
-  {% if let Some(name) = name %}
-  document.title = "{{ name }} - Empede";
-  {% else %}
-  document.title = "Empede";
-  {% endif %}
-</script>
+
 <div class="nowplaying">
   <div class="current">
     {% if let Some(song) = song %}
@@ -53,10 +47,34 @@
       class="control material-symbols-outlined" role="button" title="Play"
     >play_arrow</button>
     {% endif %}
-    
+
     <button 
       hx-post="/next"
       class="control material-symbols-outlined" role="button" title="Next track"
     >skip_next</button>
   </div>
+
+  <div class="progress" style="width: {{ elapsed / duration * 100.0 }}%"></div>
 </div>
+
+<script>
+  {% if let Some(name) = name %}
+  document.title = "{{ name }} - Empede";
+  {% else %}
+  document.title = "Empede";
+  {% endif %}
+
+  progressBar = document.querySelector(".nowplaying .progress");
+  elapsed = {{ elapsed }};
+  duration = {{ duration }};
+
+  if (progressInterval) {
+    window.clearInterval(progressInterval);
+  }
+
+  progressInterval = window.setInterval(() => {
+    elapsed += 1.0;
+    let progress = elapsed / duration;
+    progressBar.style.width = `${progress * 100}%`;
+  }, 1000);
+</script>

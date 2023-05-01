@@ -200,10 +200,11 @@ ul.dir li .material-symbols-outlined {
 
 .player .nowplaying {
   display: flex;
+  position: relative;
   flex-flow: column;
   background-color: #334;
   border-radius: 0.25rem;
-  height: 9.5rem;
+  height: 10.0rem;
 }
 @media (prefers-contrast: more) {
   .player .nowplaying {
@@ -212,10 +213,21 @@ ul.dir li .material-symbols-outlined {
   }
 }
 
+.player .progress {
+  background-color: #99f;
+
+  height: 0.5rem;
+  border-radius: 0.25rem;
+
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+
 .player .controls {
   display: flex;
   justify-content: space-around;
-  padding: 0.5rem;
+  padding: 0 0.5rem 1.0rem;
 }
 
 .player .control {
