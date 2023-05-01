@@ -29,3 +29,20 @@
   </li>
   {% endfor %}
 </ul>
+
+<script>
+htmx.onLoad(() => {
+  const isReduced = window
+    .matchMedia("(prefers-reduced-motion: reduce)")
+    .matches;
+
+  new Sortable(document.querySelector(".queue"), {
+    animation: isReduced ? 0 : 100,
+    onEnd: (event) => fetch("/queue/move", {
+      method: "POST",
+      headers: {"content-type": "application/json"},
+      body: JSON.stringify({from: event.oldIndex, to: event.newIndex}),
+    }),
+  });
+});
+</script>

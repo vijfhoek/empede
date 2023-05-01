@@ -123,6 +123,22 @@ async fn post_next(_req: tide::Request<()>) -> tide::Result {
     Ok("".into())
 }
 
+#[derive(Deserialize, Debug)]
+struct UpdateQueueBody {
+    from: u32,
+    to: u32,
+}
+
+async fn post_queue_move(mut req: tide::Request<()>) -> tide::Result {
+    let body: UpdateQueueBody = req.body_json().await?;
+    let mut mpd = mpd::connect()?;
+    mpd.move_range(
+        mpdrs::song::Range(Some(body.from), Some(body.from + 1)),
+        body.to as usize,
+    )?;
+    Ok("".into())
+}
+
 async fn get_art(req: tide::Request<()>) -> tide::Result {
     let query: IndexQuery = req.query()?;
     let resp = if let Ok(art) = mpd::connect()?.albumart(&query.path) {
@@ -172,6 +188,7 @@ async fn main() -> tide::Result<()> {
 
     app.at("/queue").post(post_queue);
     app.at("/queue").delete(delete_queue);
+    app.at("/queue/move").post(post_queue_move);
 
     app.at("/play").post(post_play);
     app.at("/pause").post(post_pause);
