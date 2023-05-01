@@ -41,14 +41,19 @@
       hx-post="/previous"
       class="control material-symbols-outlined" role="button" title="Previous track"
     >skip_previous</button>
-    <button 
-      hx-post="/play"
-      class="control material-symbols-outlined" role="button" title="Play"
-    >play_arrow</button>
+
+    {% if state == mpdrs::State::Play %}
     <button
       hx-post="/pause"
       class="control material-symbols-outlined" role="button" title="Pause"
     >pause</button>
+    {% else %}
+    <button 
+      hx-post="/play"
+      class="control material-symbols-outlined" role="button" title="Play"
+    >play_arrow</button>
+    {% endif %}
+    
     <button 
       hx-post="/next"
       class="control material-symbols-outlined" role="button" title="Next track"

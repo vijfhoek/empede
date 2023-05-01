@@ -33,18 +33,21 @@ async fn get_queue(_req: tide::Request<()>) -> tide::Result {
 
 #[derive(Template)]
 #[template(path = "player.html")]
-struct CurrentTemplate {
+struct PlayerTemplate {
     song: Option<mpdrs::Song>,
     name: Option<String>,
+    state: mpdrs::State,
 }
 
 async fn get_player(_req: tide::Request<()>) -> tide::Result {
     let mut mpd = mpd::connect()?;
     let song = mpd.currentsong()?;
+    let state = mpd.status()?.state;
 
-    let mut template = CurrentTemplate {
+    let mut template = PlayerTemplate {
         song: song.clone(),
         name: None,
+        state,
     };
 
     if let Some(song) = song {
