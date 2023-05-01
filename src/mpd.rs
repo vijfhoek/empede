@@ -1,5 +1,10 @@
 use std::borrow::Cow;
 
+use anyhow::anyhow;
+use async_std::{
+    io::{prelude::BufReadExt, BufReader, WriteExt},
+    net::TcpStream,
+};
 use mpdrs::lsinfo::LsInfoResponse;
 
 pub(crate) fn host() -> String {
@@ -84,4 +89,33 @@ pub(crate) enum Entry {
         name: String,
         path: String,
     },
+}
+
+pub(crate) async fn idle(systems: &[&str]) -> anyhow::Result<Vec<String>> {
+    let mut stream = TcpStream::connect(host()).await?;
+    let mut reader = BufReader::new(stream.clone());
+
+    // skip OK MPD line
+    // TODO check if it is indeed OK
+    let mut buffer = String::new();
+    reader.read_line(&mut buffer).await?;
+
+    let systems = systems.join(" ");
+    let command = format!("idle {systems}\n");
+    stream.write_all(command.as_bytes()).await?;
+
+    let mut updated = vec![];
+    loop {
+        buffer.clear();
+        reader.read_line(&mut buffer).await?;
+        if buffer == "OK\n" {
+            break Ok(updated);
+        }
+
+        let (_, changed) = buffer
+            .trim_end()
+            .split_once(": ")
+            .ok_or(anyhow!("unexpected response from MPD"))?;
+        updated.push(changed.to_string());
+    }
 }

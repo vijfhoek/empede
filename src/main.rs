@@ -1,12 +1,6 @@
 use std::path::Path;
 
-use anyhow::anyhow;
 use askama::Template;
-use async_std::prelude::*;
-use async_std::{
-    io::{BufReader, WriteExt},
-    net::TcpStream,
-};
 use serde::Deserialize;
 
 mod mpd;
@@ -137,34 +131,14 @@ async fn get_art(req: tide::Request<()>) -> tide::Result {
 }
 
 async fn sse(_req: tide::Request<()>, sender: tide::sse::Sender) -> tide::Result<()> {
-    // Needs to be async and all async mpd libraries suck
-    let mut stream = TcpStream::connect(mpd::host()).await?;
-    let mut reader = BufReader::new(stream.clone());
-
-    // skip OK MPD line
-    // TODO check if it is indeed OK
-    let mut buffer = String::new();
-    reader.read_line(&mut buffer).await?;
-
     // Update everything on connect
     sender.send("playlist", "", None).await?;
     sender.send("player", "", None).await?;
 
     loop {
-        stream.write_all(b"idle playlist player database\n").await?;
-
-        loop {
-            buffer.clear();
-            reader.read_line(&mut buffer).await?;
-            if buffer == "OK\n" {
-                break;
-            }
-
-            let (_, changed) = buffer
-                .trim_end()
-                .split_once(": ")
-                .ok_or(anyhow!("unexpected response from MPD"))?;
-            sender.send(changed, "", None).await?;
+        let systems = mpd::idle(&["playlist", "player", "database"]).await?;
+        for system in systems {
+            sender.send(&system, "", None).await?;
         }
     }
 }
