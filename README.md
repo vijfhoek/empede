@@ -1,4 +1,9 @@
 # Empede
+
+![Drone (self-hosted)](https://img.shields.io/drone/build/_/empede?server=https%3A%2F%2Fci.sijman.nl)
+![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/vijfhoek/empede)
+![Crates.io](https://img.shields.io/crates/v/empede)
+
 **A web client for MPD.**
 
 ![Screenshot](screenshots/screenshot.webp)

@@ -1,7 +1,9 @@
 [package]
 name = "empede"
+description = "A web client for MPD"
 version = "0.1.7"
 edition = "2021"
+license = "MIT"
 
 [dependencies]
 anyhow = "1.0.70"
