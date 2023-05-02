@@ -32,7 +32,7 @@
   {% match entry %}
   {% when mpd::Entry::Song with { name, path, artist } %}
   <li 
-    hx-post="/queue?path={{path}}"
+    hx-post="/queue?path={{ path|urlencode }}"
     hx-trigger="click,keyup[key=='Enter']"
     hx-swap="none" 
     role="button"
@@ -40,7 +40,7 @@
   >
     <span class="material-symbols-outlined" title="Song">music_note</span>
     <div class="albumart">
-      <img src="/art?path={{path}}" onerror="this.style.visibility = 'hidden'">
+      <img src="/art?path={{ path|urlencode }}" onerror="this.style.visibility = 'hidden'">
     </div>
     <div class="song">
       <div class="song__name">{{ name }}</div>
