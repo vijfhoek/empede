@@ -40,19 +40,19 @@ steps:
       - apk add --no-cache tar gzip zip
 
       # x86_64-unknown-linux-gnu
-      - mkdir empede-x86_64-unknown-linux-gnu
-      - cp -r target/release/empede static/ README.md empede-x86_64-unknown-linux-gnu
-      - tar czf empede-x86_64-unknown-linux-gnu.tar.gz empede-x86_64-unknown-linux-gnu/ 
+      - mkdir empede-x86_64-unknown-linux-gnu-${DRONE_TAG}
+      - cp -r target/release/empede static/ README.md empede-x86_64-unknown-linux-gnu-${DRONE_TAG}/
+      - tar czf empede-x86_64-unknown-linux-gnu-${DRONE_TAG}.tar.gz empede-x86_64-unknown-linux-gnu-${DRONE_TAG}/ 
 
       # aarch64-unknown-linux-gnu
-      - mkdir empede-aarch64-unknown-linux-gnu
-      - cp -r target/aarch64-unknown-linux-gnu/release/empede static/ README.md empede-aarch64-unknown-linux-gnu
-      - tar czf empede-aarch64-unknown-linux-gnu.tar.gz empede-aarch64-unknown-linux-gnu/ 
+      - mkdir empede-aarch64-unknown-linux-gnu-${DRONE_TAG}
+      - cp -r target/aarch64-unknown-linux-gnu/release/empede static/ README.md empede-aarch64-unknown-linux-gnu-${DRONE_TAG}/
+      - tar czf empede-aarch64-unknown-linux-gnu-${DRONE_TAG}.tar.gz empede-aarch64-unknown-linux-gnu-${DRONE_TAG}/ 
         
       # x86_64-pc-windows-gnu
-      - mkdir empede-x86_64-pc-windows-gnu
-      - cp -r target/x86_64-pc-windows-gnu/release/empede.exe static/ README.md empede-x86_64-pc-windows-gnu
-      - zip -r empede-x86_64-pc-windows-gnu.zip empede-x86_64-pc-windows-gnu/
+      - mkdir empede-x86_64-pc-windows-gnu-${DRONE_TAG}
+      - cp -r target/x86_64-pc-windows-gnu/release/empede.exe static/ README.md empede-x86_64-pc-windows-gnu-${DRONE_TAG}/
+      - zip -r empede-x86_64-pc-windows-gnu-${DRONE_TAG}.zip empede-x86_64-pc-windows-gnu-${DRONE_TAG}/
     depends_on:
       - build-aarch64-unknown-linux-gnu
       - build-x86_64-unknown-linux-gnu
@@ -67,9 +67,9 @@ steps:
         from_secret: GITEA_TOKEN
       base_url: https://git.sijman.nl
       files:
-        - empede-aarch64-unknown-linux-gnu.tar.gz
-        - empede-x86_64-unknown-linux-gnu.tar.gz
-        - empede-x86_64-pc-windows-gnu.zip
+        - empede-aarch64-unknown-linux-gnu-${DRONE_TAG}.tar.gz
+        - empede-x86_64-unknown-linux-gnu-${DRONE_TAG}.tar.gz
+        - empede-x86_64-pc-windows-gnu-${DRONE_TAG}.zip
     depends_on:
       - package
     when:
