@@ -75,7 +75,7 @@
 
   progressInterval = window.setInterval(() => {
     elapsed += 1.0;
-    let progress = elapsed / duration;
+    let progress = Math.min(elapsed / duration, 1.0);
     progressBar.style.width = `${progress * 100}%`;
   }, 1000);
   {% endif %}
