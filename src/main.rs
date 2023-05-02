@@ -1,7 +1,6 @@
 use std::path::Path;
 
 use askama::Template;
-use image::{imageops::FilterType, ImageFormat};
 use percent_encoding::percent_decode_str;
 use serde::Deserialize;
 
@@ -143,29 +142,17 @@ async fn post_queue_move(mut req: tide::Request<()>) -> tide::Result {
     Ok("".into())
 }
 
-#[derive(Deserialize, Default)]
-#[serde(default)]
-struct ArtQuery {
-    path: String,
-    resolution: Option<(u32, u32)>,
-}
-
 async fn get_art(req: tide::Request<()>) -> tide::Result {
-    let query: ArtQuery = req.query()?;
+    let query: IndexQuery = req.query()?;
     let path = percent_decode_str(&query.path).decode_utf8_lossy();
-    println!("reading");
     let resp = if let Ok(art) = mpd::connect()?.albumart(&path) {
-        let image = image::load_from_memory(&art)?;
-        let image = image.resize(512, 512, FilterType::Nearest);
-
-        let mut writer = std::io::BufWriter::new(std::io::Cursor::new(Vec::new()));
-        image.write_to(&mut writer, ImageFormat::WebP)?;
-        
-        let inner = writer.into_inner()?.into_inner();
+        let mime = infer::get(&art)
+            .map(|k| k.mime_type())
+            .unwrap_or("application/octet-stream");
 
         tide::Response::builder(tide::StatusCode::Ok)
-            .content_type("image/webp")
-            .body(inner)
+            .body(art)
+            .content_type(mime)
             .header("cache-control", "max-age=3600")
     } else {
         tide::Response::builder(tide::StatusCode::NotFound)
