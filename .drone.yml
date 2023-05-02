@@ -7,6 +7,13 @@ platform:
   arch: amd64
 
 steps:
+  - name: lint
+    image: rust:latest
+    commands:
+      - rustup component add rustfmt clippy
+      - cargo fmt --check
+      - cargo clippy
+
   - name: build-x86_64-unknown-linux-gnu
     image: rust:latest
     commands:
