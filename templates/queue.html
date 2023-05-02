@@ -14,7 +14,7 @@
   <li {% if item.playing %}class="playing"{% endif %}>
     <div class="albumart">
       <img
-        src="/art?path={{ item.file }}"
+        src="/art?path={{ item.file|urlencode }}"
         onerror="this.style.opacity = 0"
         alt="Album art"
         title="Album art"

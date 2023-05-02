@@ -5,9 +5,9 @@
   <div class="current">
     {% if let Some(song) = song %}
     <div class="albumart">
-      <a href="/art?path={{ song.file }}" target="_blank">
+      <a href="/art?path={{ song.file|urlencode }}" target="_blank">
         <img 
-          src="/art?path={{ song.file }}"
+          src="/art?path={{ song.file|urlencode }}"
           onerror="this.style.opacity = 0"
           alt="Album art"
           title="Album art"

@@ -15,10 +15,11 @@
     {{ component }}
     {% else %}
     <a
-      href="/?path={{ path[..i + 1].join("/") }}" 
-      hx-replace-url="/?path={{ path[..i + 1].join("/") }}" 
+      {% let encoded = path[..i + 1].join("/")|urlencode %}
+      href="/?path={{ encoded }}" 
+      hx-replace-url="/?path={{ encoded }}" 
       hx-get="/browser"
-      hx-vals='{"path": "{{ path[..i + 1].join("/") }}"}'
+      hx-vals='{"path": "{{ encoded }}"}'
       hx-target=".browser"
     >{{ component }}</a>
     {% endif %}
@@ -49,20 +50,20 @@
   {% when mpd::Entry::Directory with { name, path } %}
   <li
     hx-get="/browser"
-    hx-vals='{"path": "{{ path }}"}'
-    hx-replace-url="/?path={{ path }}"
+    hx-vals='{"path": "{{ path|urlencode }}"}'
+    hx-replace-url="/?path={{ path|urlencode }}"
     hx-target=".browser"
     role="link"
   >
     <span class="material-symbols-outlined" title="Directory">folder</span>
     <div class="song__name">
-      <a href="/?path={{ path }}" hx-get="/browser" hx-sync="closest li:abort">
+      <a href="/?path={{ path|urlencode }}" hx-get="/browser" hx-sync="closest li:abort">
         {{ name }}
       </a>
     </div>
   </li>
   {% when mpd::Entry::Playlist with { name, path } %}
-  <li hx-post="/queue?path={{ path }}" hx-swap="none" role="button" >
+  <li hx-post="/queue?path={{ path|urlencode }}" hx-swap="none" role="button" >
     <span class="material-symbols-outlined" title="Playlist">playlist_play</span>
     <div class="song">
       <div class="song__name">{{ name }}</div>

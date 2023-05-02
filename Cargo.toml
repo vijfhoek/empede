@@ -12,6 +12,7 @@ askama_tide = "0.15.0"
 async-std = { version = "1.12.0", features = ["attributes"] }
 infer = { version = "0.13.0", default-features = false }
 mpdrs = "0.1.0"
+percent-encoding = "2.2.0"
 serde = { version = "1.0.160", features = ["derive"] }
 serde_qs = "0.12.0"
 tide = "0.16.0"

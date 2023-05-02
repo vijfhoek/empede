@@ -1,6 +1,7 @@
 use std::path::Path;
 
 use askama::Template;
+use percent_encoding::percent_decode_str;
 use serde::Deserialize;
 
 mod mpd;
@@ -74,10 +75,11 @@ struct BrowserTemplate {
 
 async fn get_browser(req: tide::Request<()>) -> tide::Result {
     let query: IndexQuery = req.query()?;
-    let entries = mpd::ls(&query.path)?;
+    let path = percent_decode_str(&query.path).decode_utf8_lossy();
+    let entries = mpd::ls(&path)?;
 
     let template = BrowserTemplate {
-        path: Path::new(&query.path)
+        path: Path::new(&*path)
             .iter()
             .map(|s| s.to_string_lossy().to_string())
             .collect(),
@@ -94,7 +96,8 @@ struct PostQueueQuery {
 
 async fn post_queue(req: tide::Request<()>) -> tide::Result {
     let query: PostQueueQuery = req.query()?;
-    mpd::connect()?.add(&query.path)?;
+    let path = percent_decode_str(&query.path).decode_utf8_lossy();
+    mpd::connect()?.add(&path)?;
     Ok("".into())
 }
 
@@ -141,7 +144,8 @@ async fn post_queue_move(mut req: tide::Request<()>) -> tide::Result {
 
 async fn get_art(req: tide::Request<()>) -> tide::Result {
     let query: IndexQuery = req.query()?;
-    let resp = if let Ok(art) = mpd::connect()?.albumart(&query.path) {
+    let path = percent_decode_str(&query.path).decode_utf8_lossy();
+    let resp = if let Ok(art) = mpd::connect()?.albumart(&path) {
         let mime = infer::get(&art)
             .map(|k| k.mime_type())
             .unwrap_or("application/octet-stream");
