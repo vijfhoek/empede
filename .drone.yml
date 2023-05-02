@@ -7,18 +7,36 @@ platform:
   arch: amd64
 
 steps:
+  - name: restore-cache-with-filesystem
+    image: meltwater/drone-cache
+    pull: true
+    settings:
+      backend: "filesystem"
+      restore: true
+      cache_key: "volume"
+      mount:
+        - target
+        - /usr/local/cargo/env
+    volumes:
+      - name: cache
+        path: /tmp/cache
+
   - name: lint
     image: rust:latest
     commands:
       - rustup component add rustfmt clippy
       - cargo fmt --check
       - cargo clippy
+    depends_on:
+      - restore-cache-with-filesystem
 
   - name: build-x86_64-unknown-linux-gnu
     image: rust:latest
     commands:
       - cargo build --release
       - strip target/release/empede
+    depends_on:
+      - restore-cache-with-filesystem
 
   - name: build-aarch64-unknown-linux-gnu
     image: rust:latest
@@ -30,6 +48,8 @@ steps:
       - aarch64-linux-gnu-strip target/aarch64-unknown-linux-gnu/release/empede
     when:
       event: tag
+    depends_on:
+      - restore-cache-with-filesystem
 
   - name: build-x86_64-pc-windows-gnu
     image: rust:latest
@@ -40,6 +60,8 @@ steps:
       - x86_64-w64-mingw32-strip target/x86_64-pc-windows-gnu/release/empede.exe
     when:
       event: tag
+    depends_on:
+      - restore-cache-with-filesystem
 
   - name: package
     image: alpine
@@ -49,13 +71,13 @@ steps:
       # x86_64-unknown-linux-gnu
       - mkdir empede-x86_64-unknown-linux-gnu-${DRONE_TAG}
       - cp -r target/release/empede static/ README.md empede-x86_64-unknown-linux-gnu-${DRONE_TAG}/
-      - tar czf empede-x86_64-unknown-linux-gnu-${DRONE_TAG}.tar.gz empede-x86_64-unknown-linux-gnu-${DRONE_TAG}/ 
+      - tar czf empede-x86_64-unknown-linux-gnu-${DRONE_TAG}.tar.gz empede-x86_64-unknown-linux-gnu-${DRONE_TAG}/
 
       # aarch64-unknown-linux-gnu
       - mkdir empede-aarch64-unknown-linux-gnu-${DRONE_TAG}
       - cp -r target/aarch64-unknown-linux-gnu/release/empede static/ README.md empede-aarch64-unknown-linux-gnu-${DRONE_TAG}/
-      - tar czf empede-aarch64-unknown-linux-gnu-${DRONE_TAG}.tar.gz empede-aarch64-unknown-linux-gnu-${DRONE_TAG}/ 
-        
+      - tar czf empede-aarch64-unknown-linux-gnu-${DRONE_TAG}.tar.gz empede-aarch64-unknown-linux-gnu-${DRONE_TAG}/
+
       # x86_64-pc-windows-gnu
       - mkdir empede-x86_64-pc-windows-gnu-${DRONE_TAG}
       - cp -r target/x86_64-pc-windows-gnu/release/empede.exe static/ README.md empede-x86_64-pc-windows-gnu-${DRONE_TAG}/
@@ -82,4 +104,26 @@ steps:
     when:
       event: tag
 
+  - name: rebuild-cache-with-filesystem
+    image: meltwater/drone-cache
+    pull: true
+    settings:
+      backend: "filesystem"
+      rebuild: true
+      cache_key: "volume"
+      mount:
+        - target
+        - /usr/local/cargo/env
+    volumes:
+      - name: cache
+        path: /tmp/cache
+    depends_on:
+      - build-aarch64-unknown-linux-gnu
+      - build-x86_64-unknown-linux-gnu
+      - build-x86_64-pc-windows-gnu
+      - lint
 
+volumes:
+  - name: cache
+    host:
+      path: /var/lib/cache
