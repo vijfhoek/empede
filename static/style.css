@@ -149,7 +149,7 @@ ul.dir li {
   cursor: pointer;
   padding: 0.5rem 0.5rem;
   border-radius: 0.25rem;
-  min-height: 4rem;
+  min-height: 3rem;
 
   display: flex;
   align-items: center;
