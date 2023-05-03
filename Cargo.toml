@@ -4,6 +4,7 @@ description = "A web client for MPD"
 version = "0.1.9"
 edition = "2021"
 license = "MIT"
+repository = "https://github.com/vijfhoek/empede"
 
 [dependencies]
 anyhow = "1.0.70"
