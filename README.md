@@ -1,8 +1,8 @@
 # Empede
 
-![Drone (self-hosted)](https://img.shields.io/drone/build/_/empede?server=https%3A%2F%2Fci.sijman.nl)
-![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/vijfhoek/empede)
-![Crates.io](https://img.shields.io/crates/v/empede)
+[![Drone (self-hosted)](https://img.shields.io/drone/build/_/empede?server=https%3A%2F%2Fci.sijman.nl)](https://ci.sijman.nl/_/empede)
+[![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/vijfhoek/empede)](https://quay.io/repository/vijfhoek/empede)
+[![Crates.io](https://img.shields.io/crates/v/empede)](https://crates.io/crates/empede)
 
 **A web client for MPD.**
 
