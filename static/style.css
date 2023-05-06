@@ -32,6 +32,14 @@ button {
   background-color: transparent;
   border: none;
   color: inherit;
+  padding: 0;
+  font-weight: bold;
+  display: flex;
+  line-height: 24px;
+  cursor: pointer;
+}
+button .material-symbols-outlined {
+  margin-right: 0.25rem;
 }
 
 .browser {
@@ -71,14 +79,6 @@ ul {
   font-weight: bold;
   flex: 1;
 }
-.queue-clear {
-  font-weight: bold;
-  display: flex;
-  line-height: 24px;
-}
-.queue-clear .material-symbols-outlined {
-  margin-right: 0.25rem;
-}
 
 .queue {
   margin-top: 0.5rem;
@@ -112,15 +112,28 @@ ul {
   -webkit-box-orient: vertical;
 }
 
+.browser .header {
+  display: flex;
+  flex-flow: column;
+  background-color: #334;
+  border-radius: 0.25rem;
+  padding: 0.75rem 1rem;
+  margin: 16px 16px 0;
+}
+
+.browser .buttons {
+  display: flex;
+  flex-flow: row;
+  margin-top: 0.75rem;
+}
+.browser .buttons button {
+  margin-right: 1.0rem;
+}
+
 ul.breadcrumb {
   display: flex;
-  margin-bottom: 1rem;
   flex-wrap: wrap;
   list-style: none;
-  background-color: #334;
-  border-radius: .25rem;
-  padding: .75rem 1rem;
-  margin: 16px 16px 0;
 }
 @media (prefers-contrast: more) {
   ul.breadcrumb {

@@ -1,31 +1,49 @@
 {# #}
-<ul class="breadcrumb">
-  <li>
-    <a
-      href="/" 
-      hx-replace-url="/" 
-      hx-get="/browser" 
-      hx-vals='{"path": ""}'
-      hx-target=".browser"
-    >Root</a>
-  </li>
-  {% for (i, component) in path.iter().enumerate() %}
-  <li>
-    {% if i == path.len() - 1 %}
-    {{ component }}
-    {% else %}
-    <a
-      {% let encoded = path[..i + 1].join("/")|urlencode %}
-      href="/?path={{ encoded }}" 
-      hx-replace-url="/?path={{ encoded }}" 
-      hx-get="/browser"
-      hx-vals='{"path": "{{ encoded }}"}'
-      hx-target=".browser"
-    >{{ component }}</a>
-    {% endif %}
-  </li>
-  {% endfor %}
-</ul>
+<div class="header">
+  <ul class="breadcrumb">
+    <li>
+      <a
+        href="/" 
+        hx-replace-url="/" 
+        hx-get="/browser" 
+        hx-vals='{"path": ""}'
+        hx-target=".browser"
+      >Root</a>
+    </li>
+    {% for (i, component) in path.iter().enumerate() %}
+    <li>
+      {% if i == path.len() - 1 %}
+      {{ component }}
+      {% else %}
+      <a
+        {% let encoded = path[..i + 1].join("/")|urlencode %}
+        href="/?path={{ encoded }}" 
+        hx-replace-url="/?path={{ encoded }}" 
+        hx-get="/browser"
+        hx-vals='{"path": "{{ encoded }}"}'
+        hx-target=".browser"
+      >{{ component }}</a>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+
+  <div class="buttons">
+    {% let encoded = path.join("/")|urlencode %}
+    <button hx-delete="/queue" hx-swap="none" hx-post="/queue?path={{ encoded }}">
+      <span class="material-symbols-outlined">playlist_add</span>
+      Queue all
+    </button>
+    <button hx-delete="/queue" hx-swap="none" hx-post="/queue?path={{ encoded }}&replace=true&play=true">
+      <span class="material-symbols-outlined">playlist_play</span>
+      Play all
+    </button>
+    <button hx-delete="/queue" hx-swap="none" hx-post="/queue?path={{ encoded }}&next=true">
+      <span class="material-symbols-outlined">playlist_add</span>
+      Play next
+    </button>
+  </div>
+</div>
 
 <ul class="dir" hx-boost="true" tabindex="-1">
   {% for entry in entries %}

@@ -92,12 +92,33 @@ async fn get_browser(req: tide::Request<()>) -> tide::Result {
 #[derive(Deserialize)]
 struct PostQueueQuery {
     path: String,
+    #[serde(default)]
+    replace: bool,
+    #[serde(default)]
+    next: bool,
+    #[serde(default)]
+    play: bool,
 }
 
 async fn post_queue(req: tide::Request<()>) -> tide::Result {
     let query: PostQueueQuery = req.query()?;
     let path = percent_decode_str(&query.path).decode_utf8_lossy();
-    mpd::connect()?.add(&path)?;
+    let mut mpd = mpd::Mpd::connect().await?;
+
+    if query.replace {
+        mpd.clear().await?;
+    }
+
+    if query.next {
+        mpd.add_pos(&path, "+0").await?;
+    } else {
+        mpd.add(&path).await?;
+    }
+
+    if query.play {
+        mpd.play().await?;
+    }
+
     Ok("".into())
 }
 
@@ -178,7 +199,7 @@ async fn sse(_req: tide::Request<()>, sender: tide::sse::Sender) -> tide::Result
 #[async_std::main]
 async fn main() -> tide::Result<()> {
     tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
+        .with_max_level(tracing::Level::WARN)
         .init();
 
     let mut app = tide::new();

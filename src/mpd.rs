@@ -104,8 +104,8 @@ pub(crate) struct Mpd {
 }
 
 impl Mpd {
-    fn escape_str(s: &str) -> String {
-        s.replace("\"", "\\\"").replace("'", "\\'")
+    pub fn escape_str(s: &str) -> String {
+        s.replace('\"', "\\\"").replace('\'', "\\'")
     }
 
     pub async fn connect() -> anyhow::Result<Self> {
@@ -128,6 +128,45 @@ impl Mpd {
         }
 
         Ok(Self { stream, reader })
+    }
+
+    pub async fn command(&mut self, command: &str) -> anyhow::Result<()> {
+        self.stream
+            .write_all(format!("{command}\n").as_bytes())
+            .await?;
+
+        let mut buffer = String::new();
+        loop {
+            buffer.clear();
+            self.reader.read_line(&mut buffer).await?;
+
+            let split: Vec<_> = buffer.trim_end().split_ascii_whitespace().collect();
+
+            if split[0] == "OK" {
+                break Ok(());
+            } else if split[0] == "ACK" {
+                break Err(anyhow!(buffer));
+            }
+        }
+    }
+
+    pub async fn clear(&mut self) -> anyhow::Result<()> {
+        self.command("clear").await
+    }
+
+    pub async fn add(&mut self, path: &str) -> anyhow::Result<()> {
+        let path = Self::escape_str(path);
+        self.command(&format!("add \"{path}\"")).await
+    }
+
+    pub async fn add_pos(&mut self, path: &str, pos: &str) -> anyhow::Result<()> {
+        let path = Self::escape_str(path);
+        let pos = Self::escape_str(pos);
+        self.command(&format!("add \"{path}\" \"{pos}\"")).await
+    }
+
+    pub async fn play(&mut self) -> anyhow::Result<()> {
+        self.command("play").await
     }
 
     pub(crate) async fn idle(&mut self, systems: &[&str]) -> anyhow::Result<Vec<String>> {
