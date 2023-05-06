@@ -59,7 +59,7 @@
 
 <script>
   {% if let Some(name) = name %}
-  document.title = "{{ name }} - Empede";
+  document.title = decodeURI("{{ name|urlencode }} - Empede");
   {% else %}
   document.title = "Empede";
   {% endif %}
