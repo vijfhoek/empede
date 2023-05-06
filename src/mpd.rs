@@ -14,7 +14,14 @@ pub(crate) fn host() -> String {
 }
 
 pub(crate) fn connect() -> Result<mpdrs::Client, mpdrs::error::Error> {
-    mpdrs::Client::connect(host())
+    let mut client = mpdrs::Client::connect(host())?;
+
+    let password = std::env::var("MPD_PASSWORD").unwrap_or(String::new());
+    if !password.is_empty() {
+        client.login(&password)?;
+    }
+
+    Ok(client)
 }
 
 pub(crate) fn ls(path: &str) -> anyhow::Result<Vec<Entry>> {
@@ -91,31 +98,58 @@ pub(crate) enum Entry {
     },
 }
 
-pub(crate) async fn idle(systems: &[&str]) -> anyhow::Result<Vec<String>> {
-    let mut stream = TcpStream::connect(host()).await?;
-    let mut reader = BufReader::new(stream.clone());
+pub(crate) struct Mpd {
+    stream: TcpStream,
+    reader: BufReader<TcpStream>,
+}
 
-    // skip OK MPD line
-    // TODO check if it is indeed OK
-    let mut buffer = String::new();
-    reader.read_line(&mut buffer).await?;
+impl Mpd {
+    fn escape_str(s: &str) -> String {
+        s.replace("\"", "\\\"").replace("'", "\\'")
+    }
 
-    let systems = systems.join(" ");
-    let command = format!("idle {systems}\n");
-    stream.write_all(command.as_bytes()).await?;
+    pub async fn connect() -> anyhow::Result<Self> {
+        let mut stream = TcpStream::connect(host()).await?;
+        let mut reader = BufReader::new(stream.clone());
 
-    let mut updated = vec![];
-    loop {
-        buffer.clear();
+        // skip OK MPD line
+        // TODO check if it is indeed OK
+        let mut buffer = String::new();
         reader.read_line(&mut buffer).await?;
-        if buffer == "OK\n" {
-            break Ok(updated);
+
+        let password = std::env::var("MPD_PASSWORD").unwrap_or(String::new());
+        if !password.is_empty() {
+            let password = Self::escape_str(&password);
+            let command = format!("password \"{password}\"\n");
+            stream.write_all(command.as_bytes()).await?;
+
+            buffer.clear();
+            reader.read_line(&mut buffer).await?;
         }
 
-        let (_, changed) = buffer
-            .trim_end()
-            .split_once(": ")
-            .ok_or(anyhow!("unexpected response from MPD"))?;
-        updated.push(changed.to_string());
+        Ok(Self { stream, reader })
+    }
+
+    pub(crate) async fn idle(&mut self, systems: &[&str]) -> anyhow::Result<Vec<String>> {
+        let mut buffer = String::new();
+
+        let systems = systems.join(" ");
+        let command = format!("idle {systems}\n");
+        self.stream.write_all(command.as_bytes()).await?;
+
+        let mut updated = vec![];
+        loop {
+            buffer.clear();
+            self.reader.read_line(&mut buffer).await?;
+            if buffer == "OK\n" {
+                break Ok(updated);
+            }
+
+            let (_, changed) = buffer
+                .trim_end()
+                .split_once(": ")
+                .ok_or(anyhow!("unexpected response from MPD"))?;
+            updated.push(changed.to_string());
+        }
     }
 }

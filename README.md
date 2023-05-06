@@ -11,11 +11,12 @@
 ## Configuration
 Empede is configured using environment variables:
 
-| Name            | Default      | Description                       |
-| --------------- | ------------ | --------------------------------- |
-| **MPD_HOST**    | localhost    | MPD server host                   |
-| **MPD_PORT**    | 6600         | MPD server port                   |
-| **EMPEDE_BIND** | 0.0.0.0:8080 | Address for Empede to bind to     |
+| Name             | Default      | Description                       |
+| ---------------- | ------------ | --------------------------------- |
+| **MPD_HOST**     | localhost    | MPD server host                   |
+| **MPD_PORT**     | 6600         | MPD server port                   |
+| **MPD_PASSWORD** |              | MPD server password               |
+| **EMPEDE_BIND**  | 0.0.0.0:8080 | Address for Empede to bind to     |
 
 ## Running
 ### Linux

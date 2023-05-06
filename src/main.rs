@@ -165,8 +165,10 @@ async fn sse(_req: tide::Request<()>, sender: tide::sse::Sender) -> tide::Result
     sender.send("playlist", "", None).await?;
     sender.send("player", "", None).await?;
 
+    let mut mpd = mpd::Mpd::connect().await?;
+
     loop {
-        let systems = mpd::idle(&["playlist", "player", "database"]).await?;
+        let systems = mpd.idle(&["playlist", "player", "database"]).await?;
         for system in systems {
             sender.send(&system, "", None).await?;
         }
