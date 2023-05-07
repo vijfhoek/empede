@@ -1,5 +1,3 @@
-use std::borrow::Cow;
-
 use anyhow::anyhow;
 use async_std::{
     io::{prelude::BufReadExt, BufReader, WriteExt},
@@ -27,29 +25,29 @@ pub(crate) fn connect() -> Result<mpdrs::Client, mpdrs::error::Error> {
 pub(crate) fn ls(path: &str) -> anyhow::Result<Vec<Entry>> {
     let info = connect()?.lsinfo(path)?;
 
-    fn filename(path: &str) -> Cow<str> {
+    fn filename(path: &str) -> String {
         std::path::Path::new(path)
             .file_name()
-            .map(|x| x.to_string_lossy())
-            .unwrap_or(Cow::Borrowed("n/a"))
+            .map(|x| x.to_string_lossy().to_string())
+            .unwrap_or("n/a".to_string())
     }
 
     Ok(info
         .iter()
         .map(|e| match e {
             LsInfoResponse::Song(song) => Entry::Song {
-                name: song.title.as_ref().unwrap_or(&song.file).clone(),
+                name: song.title.as_ref().unwrap_or(&filename(&song.file)).clone(),
                 artist: song.artist.clone().unwrap_or(String::new()),
                 path: song.file.clone(),
             },
 
             LsInfoResponse::Directory { path, .. } => Entry::Directory {
-                name: filename(path).to_string(),
+                name: filename(path),
                 path: path.to_string(),
             },
 
             LsInfoResponse::Playlist { path, .. } => Entry::Playlist {
-                name: filename(path).to_string(),
+                name: filename(path),
                 path: path.to_string(),
             },
         })
