@@ -31,8 +31,17 @@
     ></div>
 
     <div class="player">
-      <div hx-trigger="sse:player" hx-get="/player"></div>
-      <div hx-trigger="sse:playlist,sse:player" hx-get="/queue"></div>
+      <div class="nowplaying" hx-trigger="sse:player" hx-get="/player"></div>
+
+      <div class="queue-header">
+        <div class="queue-next">Next in queue</div>
+        <button class="queue-clear" hx-delete="/queue" hx-swap="none">
+          <span class="material-symbols-outlined">playlist_remove</span>
+          Clear
+        </button>
+      </div>
+
+      <div class="queue" hx-trigger="sse:playlist,sse:player" hx-get="/queue"></div>
     </div>
   </body>
 </html>

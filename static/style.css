@@ -24,10 +24,6 @@ body {
   }
 }
 
-body > div {
-  padding: 1rem;
-}
-
 button {
   background-color: transparent;
   border: none;
@@ -70,11 +66,18 @@ ul {
   margin: 0;
 }
 
+.player > .queue {
+  flex: 1;
+  display: flex;
+  flex-flow: column;
+}
+
 .queue-header {
   margin-top: 1.0rem;
   display: flex;
   align-items: center;
 }
+
 .queue-next {
   font-weight: bold;
   flex: 1;
@@ -82,29 +85,30 @@ ul {
 
 .queue {
   margin-top: 0.5rem;
+  overflow: auto;
 }
 
-.queue li {
+.queue ul li {
   padding: 0 0.5rem;
   border-radius: .25rem;
   display: flex;
   align-items: center;
 }
 
-.queue li.playing {
+.queue ul li.playing {
   background-color: #334;
 }
 @media (prefers-contrast: more) {
-  .queue li.playing {
+  .queue ul li.playing {
     background-color: black;
     border: 2px solid white;
   }
 }
 
-.queue .metadata {
+.queue ul .metadata {
   flex: 1;
 }
-.queue .song__name {
+.queue ul .song__name {
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2; /* number of lines to show */
@@ -209,6 +213,9 @@ ul.dir li .material-symbols-outlined {
 
 .player {
   width: 25rem;
+  padding: 1rem 1rem 0;
+  display: flex;
+  flex-flow: column;
 }
 
 .player .nowplaying {

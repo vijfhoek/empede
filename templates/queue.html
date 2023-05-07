@@ -1,15 +1,7 @@
 {# Template #}
 <!DOCTYPE html>
 
-<div class="queue-header">
-  <div class="queue-next">Next in queue</div>
-  <button class="queue-clear" hx-delete="/queue" hx-swap="none">
-    <span class="material-symbols-outlined">playlist_remove</span>
-    Clear
-  </div>
-</div>
-
-<ul class="queue">
+<ul>
   {% for item in queue %}
   <li {% if item.playing %}class="playing"{% endif %}>
     <div class="albumart">
@@ -36,7 +28,7 @@ htmx.onLoad(() => {
     .matchMedia("(prefers-reduced-motion: reduce)")
     .matches;
 
-  new Sortable(document.querySelector(".queue"), {
+  new Sortable(document.querySelector(".queue ul"), {
     animation: isReduced ? 0 : 100,
     onEnd: (event) => fetch("/queue/move", {
       method: "POST",
