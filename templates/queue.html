@@ -17,6 +17,9 @@
       <div class="song__artist" title="Artist">{{ artist }}</div>
       {% endif %}
     </div>
+    <div class="remove">
+      <button class="material-symbols-outlined" title="Remove" hx-delete="/queue?id={{ item.id }}">close</button>
+    </div>
   </li>
   {% endfor %}
 </ul>

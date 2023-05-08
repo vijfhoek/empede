@@ -55,6 +55,7 @@ pub fn ls(path: &str) -> anyhow::Result<Vec<Entry>> {
 }
 
 pub struct QueueItem {
+    pub id: u32,
     pub file: String,
     pub title: String,
     pub artist: Option<String>,
@@ -70,6 +71,7 @@ pub fn playlist() -> anyhow::Result<Vec<QueueItem>> {
         .queue()?
         .into_iter()
         .map(|song| QueueItem {
+            id: song.place.unwrap().id,
             file: song.file.clone(),
             title: song.title.as_ref().unwrap_or(&song.file).clone(),
             artist: song.artist.clone(),

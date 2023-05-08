@@ -122,8 +122,22 @@ async fn post_queue(req: tide::Request<()>) -> tide::Result {
     Ok("".into())
 }
 
-async fn delete_queue(_req: tide::Request<()>) -> tide::Result {
-    mpd::connect()?.clear()?;
+#[derive(Deserialize)]
+struct DeleteQueueQuery {
+    #[serde(default)]
+    id: Option<u32>,
+}
+
+async fn delete_queue(req: tide::Request<()>) -> tide::Result {
+    let query: DeleteQueueQuery = req.query()?;
+
+    let mut mpd = mpd::connect()?;
+    if let Some(id) = query.id {
+        mpd.deleteid(id)?;
+    } else {
+        mpd.clear()?;
+    }
+
     Ok("".into())
 }
 

@@ -108,12 +108,20 @@ ul {
 .queue ul .metadata {
   flex: 1;
 }
+
+.queue ul .metadata * {
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
 .queue ul .song__name {
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 2; /* number of lines to show */
-  line-clamp: 2; 
-  -webkit-box-orient: vertical;
+}
+
+.queue ul li:not(:hover) .remove {
+  display: none;
 }
 
 .browser .header {
@@ -134,12 +142,8 @@ ul {
   margin-right: 1.0rem;
 }
 
-ul.breadcrumb {
-  display: flex;
-  flex-wrap: wrap;
-  list-style: none;
-}
-@media (prefers-contrast: more) {
+ul.breadcrumb {  position: relative;
+  rast: more) {
   ul.breadcrumb {
     background-color: black;
     border: 2px solid white;
@@ -187,12 +191,18 @@ ul.dir li .material-symbols-outlined {
 
 .albumart {
   border-radius: 0.25rem;
-  background-color: #445;
   width: 48px;
   height: 48px;
+  background: #445 url(/static/placeholder.webp);
+  background-size: contain;
 }
+
 .albumart a {
   display: block;
+}
+
+.albumart img {
+  visibility: hidden;
 }
 
 .queue .albumart {
