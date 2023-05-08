@@ -142,8 +142,12 @@ ul {
   margin-right: 1.0rem;
 }
 
-ul.breadcrumb {  position: relative;
-  rast: more) {
+ul.breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+}
+@media (prefers-contrast: more) {
   ul.breadcrumb {
     background-color: black;
     border: 2px solid white;
