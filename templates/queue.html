@@ -7,9 +7,8 @@
     <div class="albumart">
       <img
         src="/art?path={{ item.file|urlencode }}"
-        onerror="this.style.opacity = 0"
+        onload="this.style.visibility = 'visible'"
         alt="Album art"
-        title="Album art"
       >
     </div>
     <div class="metadata">

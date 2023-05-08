@@ -5,11 +5,10 @@
   {% if let Some(song) = song %}
   <div class="albumart">
     <a href="/art?path={{ song.file|urlencode }}" target="_blank">
-      <img 
+      <img
         src="/art?path={{ song.file|urlencode }}"
-        onerror="this.style.opacity = 0"
+        onload="this.style.visibility = 'visible'"
         alt="Album art"
-        title="Album art"
       >
     </a>
   </div>

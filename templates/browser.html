@@ -58,7 +58,11 @@
   >
     <span class="material-symbols-outlined" title="Song">music_note</span>
     <div class="albumart">
-      <img src="/art?path={{ path|urlencode }}" onerror="this.style.visibility = 'hidden'">
+      <img
+        src="/art?path={{ path|urlencode }}"
+        onload="this.style.visibility = 'visible'"
+        alt="Album art"
+      >
     </div>
     <div class="song">
       <div class="song__name">{{ name }}</div>
