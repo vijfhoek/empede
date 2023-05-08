@@ -5,13 +5,13 @@ use async_std::{
 };
 use mpdrs::lsinfo::LsInfoResponse;
 
-pub(crate) fn host() -> String {
+pub fn host() -> String {
     let host = std::env::var("MPD_HOST").unwrap_or("localhost".to_string());
     let port = std::env::var("MPD_PORT").unwrap_or("6600".to_string());
     format!("{host}:{port}")
 }
 
-pub(crate) fn connect() -> Result<mpdrs::Client, mpdrs::error::Error> {
+pub fn connect() -> Result<mpdrs::Client, mpdrs::error::Error> {
     let mut client = mpdrs::Client::connect(host())?;
 
     let password = std::env::var("MPD_PASSWORD").unwrap_or(String::new());
@@ -22,7 +22,7 @@ pub(crate) fn connect() -> Result<mpdrs::Client, mpdrs::error::Error> {
     Ok(client)
 }
 
-pub(crate) fn ls(path: &str) -> anyhow::Result<Vec<Entry>> {
+pub fn ls(path: &str) -> anyhow::Result<Vec<Entry>> {
     let info = connect()?.lsinfo(path)?;
 
     fn filename(path: &str) -> String {
@@ -54,14 +54,14 @@ pub(crate) fn ls(path: &str) -> anyhow::Result<Vec<Entry>> {
         .collect())
 }
 
-pub(crate) struct QueueItem {
-    pub(crate) file: String,
-    pub(crate) title: String,
-    pub(crate) artist: Option<String>,
-    pub(crate) playing: bool,
+pub struct QueueItem {
+    pub file: String,
+    pub title: String,
+    pub artist: Option<String>,
+    pub playing: bool,
 }
 
-pub(crate) fn playlist() -> anyhow::Result<Vec<QueueItem>> {
+pub fn playlist() -> anyhow::Result<Vec<QueueItem>> {
     let mut client = connect()?;
 
     let current = client.status()?.song;
@@ -80,7 +80,7 @@ pub(crate) fn playlist() -> anyhow::Result<Vec<QueueItem>> {
     Ok(queue)
 }
 
-pub(crate) enum Entry {
+pub enum Entry {
     Song {
         name: String,
         artist: String,
@@ -96,7 +96,7 @@ pub(crate) enum Entry {
     },
 }
 
-pub(crate) struct Mpd {
+pub struct Mpd {
     stream: TcpStream,
     reader: BufReader<TcpStream>,
 }
@@ -167,7 +167,7 @@ impl Mpd {
         self.command("play").await
     }
 
-    pub(crate) async fn idle(&mut self, systems: &[&str]) -> anyhow::Result<Vec<String>> {
+    pub async fn idle(&mut self, systems: &[&str]) -> anyhow::Result<Vec<String>> {
         let mut buffer = String::new();
 
         let systems = systems.join(" ");
