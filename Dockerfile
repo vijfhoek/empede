@@ -1,4 +1,4 @@
-FROM rust:1.69-alpine as builder
+FROM rust:alpine as builder
 WORKDIR /usr/src/empede
 RUN apk add --no-cache build-base
 COPY ./src ./src
