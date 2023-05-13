@@ -57,9 +57,9 @@
 <script>
   {% if let Some(name) = name %}
   {% if state == mpdrs::State::Play %}
-  document.title = decodeURI("▶ {{ name|urlencode }} - Empede");
+  document.title = "▶ " + {{ name|json|safe }} + " - Empede";
   {% else %}
-  document.title = decodeURI("⏸ {{ name|urlencode }} - Empede");
+  document.title = "⏸ " + {{ name|json|safe }} + " - Empede";
   {% endif %}
   {% else %}
   document.title = "Empede";
