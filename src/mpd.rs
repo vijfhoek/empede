@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 use async_std::{
-    io::{prelude::BufReadExt, BufReader, WriteExt},
+    io::{prelude::BufReadExt, BufReader, ReadExt, WriteExt},
     net::TcpStream,
 };
 use mpdrs::lsinfo::LsInfoResponse;
@@ -103,6 +103,11 @@ pub struct Mpd {
     reader: BufReader<TcpStream>,
 }
 
+pub struct CommandResult {
+    properties: Vec<(String, String)>,
+    binary: Option<Vec<u8>>,
+}
+
 impl Mpd {
     pub fn escape_str(s: &str) -> String {
         s.replace('\"', "\\\"").replace('\'', "\\'")
@@ -123,14 +128,37 @@ impl Mpd {
             let command = format!("password \"{password}\"\n");
             stream.write_all(command.as_bytes()).await?;
 
-            buffer.clear();
             reader.read_line(&mut buffer).await?;
         }
+
+        stream.write_all(b"binarylimit 1048576\n").await?;
+        buffer.clear();
+        reader.read_line(&mut buffer).await?;
+        dbg!(&buffer);
 
         Ok(Self { stream, reader })
     }
 
-    pub async fn command(&mut self, command: &str) -> anyhow::Result<()> {
+    async fn read_binary_data(&mut self, size: usize) -> anyhow::Result<Vec<u8>> {
+        let mut binary = vec![0u8; size];
+        self.reader.read_exact(&mut binary).await?;
+
+        let mut buffer = String::new();
+
+        // Skip the newline after the binary data
+        self.reader.read_line(&mut buffer).await?;
+
+        // Skip the "OK" after the binary data
+        // TODO Check if actually OK
+        self.reader.read_line(&mut buffer).await?;
+
+        Ok(binary)
+    }
+
+    pub async fn command(&mut self, command: &str) -> anyhow::Result<CommandResult> {
+        dbg!(command);
+        let mut properties = Vec::new();
+
         self.stream
             .write_all(format!("{command}\n").as_bytes())
             .await?;
@@ -140,55 +168,111 @@ impl Mpd {
             buffer.clear();
             self.reader.read_line(&mut buffer).await?;
 
-            let split: Vec<_> = buffer.trim_end().split_ascii_whitespace().collect();
+            if let Some((key, value)) = buffer.split_once(": ") {
+                let value = value.trim_end();
+                properties.push((key.to_string(), value.to_string()));
 
-            if split[0] == "OK" {
-                break Ok(());
-            } else if split[0] == "ACK" {
+                if key == "binary" {
+                    let binary = self.read_binary_data(value.parse()?).await?;
+
+                    break Ok(CommandResult {
+                        properties,
+                        binary: Some(binary),
+                    });
+                }
+            } else if buffer.starts_with("OK") {
+                dbg!(&properties);
+                break Ok(CommandResult {
+                    properties,
+                    binary: None,
+                });
+            } else if buffer.starts_with("ACK") {
                 break Err(anyhow!(buffer));
+            } else {
+                dbg!(&buffer);
+            }
+        }
+    }
+
+    pub async fn command_binary(&mut self, command: &str) -> anyhow::Result<CommandResult> {
+        let mut buffer = Vec::new();
+
+        loop {
+            let command = format!("{} {}", command, buffer.len());
+            let result = self.command(&command).await?;
+
+            if let Some(mut binary) = result.binary {
+                if !binary.is_empty() {
+                    buffer.append(&mut binary);
+                } else {
+                    return Ok(CommandResult {
+                        properties: result.properties,
+                        binary: Some(buffer),
+                    });
+                }
+            } else {
+                return Ok(CommandResult {
+                    properties: result.properties,
+                    binary: None,
+                });
             }
         }
     }
 
     pub async fn clear(&mut self) -> anyhow::Result<()> {
-        self.command("clear").await
+        self.command("clear").await?;
+        Ok(())
     }
 
     pub async fn add(&mut self, path: &str) -> anyhow::Result<()> {
         let path = Self::escape_str(path);
-        self.command(&format!("add \"{path}\"")).await
+        self.command(&format!("add \"{path}\"")).await?;
+        Ok(())
     }
 
     pub async fn add_pos(&mut self, path: &str, pos: &str) -> anyhow::Result<()> {
         let path = Self::escape_str(path);
         let pos = Self::escape_str(pos);
-        self.command(&format!("add \"{path}\" \"{pos}\"")).await
+        self.command(&format!("add \"{path}\" \"{pos}\"")).await?;
+        Ok(())
     }
 
     pub async fn play(&mut self) -> anyhow::Result<()> {
-        self.command("play").await
+        self.command("play").await?;
+        Ok(())
     }
 
     pub async fn idle(&mut self, systems: &[&str]) -> anyhow::Result<Vec<String>> {
-        let mut buffer = String::new();
-
         let systems = systems.join(" ");
-        let command = format!("idle {systems}\n");
-        self.stream.write_all(command.as_bytes()).await?;
+        let result = self.command(&format!("idle {systems}")).await?;
+        let changed = result
+            .properties
+            .iter()
+            .filter(|(key, _)| key == "changed")
+            .map(|(_, value)| value.clone())
+            .collect();
+        Ok(changed)
+    }
 
-        let mut updated = vec![];
-        loop {
-            buffer.clear();
-            self.reader.read_line(&mut buffer).await?;
-            if buffer == "OK\n" {
-                break Ok(updated);
-            }
+    pub async fn albumart(&mut self, path: &str) -> anyhow::Result<Vec<u8>> {
+        let path = Self::escape_str(path);
+        let result = self.command_binary(&format!("albumart \"{path}\"")).await?;
 
-            let (_, changed) = buffer
-                .trim_end()
-                .split_once(": ")
-                .ok_or(anyhow!("unexpected response from MPD"))?;
-            updated.push(changed.to_string());
+        match result.binary {
+            Some(binary) => Ok(binary),
+            None => Err(anyhow!("no album art")),
+        }
+    }
+
+    pub async fn readpicture(&mut self, path: &str) -> anyhow::Result<Vec<u8>> {
+        let path = Self::escape_str(path);
+        let result = self
+            .command_binary(&format!("readpicture \"{path}\""))
+            .await?;
+
+        match result.binary {
+            Some(binary) => Ok(binary),
+            None => Err(anyhow!("no album art")),
         }
     }
 }
