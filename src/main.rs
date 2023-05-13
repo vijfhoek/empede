@@ -6,6 +6,12 @@ use serde::Deserialize;
 
 mod mpd;
 
+macro_rules! crate_version {
+    () => {
+        env!("CARGO_PKG_VERSION")
+    };
+}
+
 #[derive(Template)]
 #[template(path = "index.html")]
 struct IndexTemplate;
