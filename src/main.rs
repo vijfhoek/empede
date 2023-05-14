@@ -50,8 +50,8 @@ struct PlayerTemplate<'a> {
 
 async fn get_player(_req: tide::Request<()>) -> tide::Result {
     let mut mpd = mpd::Mpd::connect().await?;
-    let song = mpd.command("currentsong").await?.as_hashmap();
-    let status = mpd.command("status").await?.as_hashmap();
+    let song = mpd.command("currentsong").await?.into_hashmap();
+    let status = mpd.command("status").await?.into_hashmap();
 
     let elapsed = status["elapsed"].parse().unwrap_or(0.0);
     let duration = status["duration"].parse().unwrap_or(1.0);

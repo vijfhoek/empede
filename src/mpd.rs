@@ -49,8 +49,32 @@ pub struct CommandResult {
 }
 
 impl CommandResult {
-    pub fn as_hashmap<'a>(&'a self) -> HashMap<String, String> {
-        self.properties.iter().cloned().collect()
+    pub fn into_hashmap(self) -> HashMap<String, String> {
+        self.properties.into_iter().collect()
+    }
+
+    pub fn into_hashmaps(self, split_at: &[&str]) -> Vec<HashMap<String, String>> {
+        let mut output = Vec::new();
+        let mut current = None;
+
+        for (key, value) in self.properties {
+            if split_at.contains(&key.as_str()) {
+                if let Some(current) = current {
+                    output.push(current);
+                }
+                current = Some(HashMap::new());
+            }
+
+            if let Some(current) = current.as_mut() {
+                current.insert(key, value);
+            }
+        }
+
+        if let Some(current) = current {
+            output.push(current);
+        }
+
+        output
     }
 }
 
@@ -222,32 +246,6 @@ impl Mpd {
         }
     }
 
-    pub fn split_properties(
-        properties: Vec<(String, String)>,
-        at: &[&str],
-    ) -> Vec<HashMap<String, String>> {
-        let mut output = Vec::new();
-        let mut current = None;
-
-        for (key, value) in properties {
-            if at.contains(&key.as_str()) {
-                if let Some(current) = current {
-                    output.push(current);
-                }
-                current = Some(HashMap::new());
-            }
-
-            if let Some(current) = current.as_mut() {
-                current.insert(key, value);
-            }
-        }
-
-        if let Some(current) = current {
-            output.push(current);
-        }
-
-        output
-    }
 
     pub async fn ls(&mut self, path: &str) -> anyhow::Result<Vec<Entry>> {
         fn get_filename(path: &str) -> String {
@@ -259,11 +257,10 @@ impl Mpd {
 
         let result = self
             .command(&format!("lsinfo \"{}\"", Self::escape_str(&path)))
-            .await?;
+            .await?
+            .into_hashmaps(&["file", "directory", "playlist"]);
 
-        let props = Self::split_properties(result.properties, &["file", "directory", "playlist"]);
-
-        let files = props
+        let files = result
             .iter()
             .flat_map(|prop| {
                 if let Some(file) = prop.get("file") {
@@ -292,11 +289,11 @@ impl Mpd {
     }
 
     pub async fn playlist(&mut self) -> anyhow::Result<Vec<QueueItem>> {
-        let status = self.command("status").await?.as_hashmap();
+        let status = self.command("status").await?.into_hashmap();
         let current_songid = status.get("songid");
 
         let playlistinfo = self.command("playlistinfo").await?;
-        let queue = Self::split_properties(playlistinfo.properties, &["file"]);
+        let queue = playlistinfo.into_hashmaps(&["file"]);
 
         let queue = queue
             .iter()
