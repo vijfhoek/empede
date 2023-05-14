@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{path::Path, collections::HashMap};
 
 use askama::Template;
 use percent_encoding::percent_decode_str;
@@ -33,39 +33,39 @@ struct QueueTemplate {
 }
 
 async fn get_queue(_req: tide::Request<()>) -> tide::Result {
-    let queue = mpd::playlist()?;
+    let queue = mpd::Mpd::connect().await?.playlist().await?;
     let template = QueueTemplate { queue };
     Ok(template.into())
 }
 
 #[derive(Template)]
 #[template(path = "player.html")]
-struct PlayerTemplate {
-    song: Option<mpdrs::Song>,
+struct PlayerTemplate<'a> {
+    song: Option<&'a HashMap<String, String>>,
     name: Option<String>,
-    state: mpdrs::State,
+    state: &'a str,
     elapsed: f32,
     duration: f32,
 }
 
 async fn get_player(_req: tide::Request<()>) -> tide::Result {
-    let mut mpd = mpd::connect()?;
-    let song = mpd.currentsong()?;
-    let status = mpd.status()?;
+    let mut mpd = mpd::Mpd::connect().await?;
+    let song = mpd.command("currentsong").await?.as_hashmap();
+    let status = mpd.command("status").await?.as_hashmap();
 
-    let elapsed = status.elapsed.map(|d| d.as_secs_f32()).unwrap_or(0.0);
-    let duration = status.duration.map(|d| d.as_secs_f32()).unwrap_or(0.0);
+    let elapsed = status["elapsed"].parse().unwrap_or(0.0);
+    let duration = status["duration"].parse().unwrap_or(1.0);
 
     let mut template = PlayerTemplate {
-        song: song.clone(),
+        song: if song.is_empty() { None } else { Some(&song) },
         name: None,
-        state: status.state,
+        state: &status["state"],
         elapsed,
         duration,
     };
 
-    if let Some(song) = song {
-        let name = song.title.unwrap_or(song.file);
+    if !song.is_empty() {
+        let name = song.get("Title").unwrap_or(&song["file"]).to_string();
         template.name = Some(name);
     }
 
@@ -82,7 +82,7 @@ struct BrowserTemplate {
 async fn get_browser(req: tide::Request<()>) -> tide::Result {
     let query: IndexQuery = req.query()?;
     let path = percent_decode_str(&query.path).decode_utf8_lossy();
-    let entries = mpd::ls(&path)?;
+    let entries = mpd::Mpd::connect().await?.ls(&path).await?;
 
     let template = BrowserTemplate {
         path: Path::new(&*path)
@@ -137,33 +137,33 @@ struct DeleteQueueQuery {
 async fn delete_queue(req: tide::Request<()>) -> tide::Result {
     let query: DeleteQueueQuery = req.query()?;
 
-    let mut mpd = mpd::connect()?;
+    let mut mpd = mpd::Mpd::connect().await?;
     if let Some(id) = query.id {
-        mpd.deleteid(id)?;
+        mpd.command(&format!("deleteid {id}")).await?;
     } else {
-        mpd.clear()?;
+        mpd.command("clear").await?;
     }
 
     Ok("".into())
 }
 
 async fn post_play(_req: tide::Request<()>) -> tide::Result {
-    mpd::connect()?.play()?;
+    mpd::Mpd::connect().await?.command("play").await?;
     Ok("".into())
 }
 
 async fn post_pause(_req: tide::Request<()>) -> tide::Result {
-    mpd::connect()?.pause(true)?;
+    mpd::Mpd::connect().await?.command("pause 1").await?;
     Ok("".into())
 }
 
 async fn post_previous(_req: tide::Request<()>) -> tide::Result {
-    mpd::connect()?.prev()?;
+    mpd::Mpd::connect().await?.command("previous").await?;
     Ok("".into())
 }
 
 async fn post_next(_req: tide::Request<()>) -> tide::Result {
-    mpd::connect()?.next()?;
+    mpd::Mpd::connect().await?.command("next").await?;
     Ok("".into())
 }
 
@@ -175,11 +175,8 @@ struct UpdateQueueBody {
 
 async fn post_queue_move(mut req: tide::Request<()>) -> tide::Result {
     let body: UpdateQueueBody = req.body_json().await?;
-    let mut mpd = mpd::connect()?;
-    mpd.move_range(
-        mpdrs::song::Range(Some(body.from), Some(body.from + 1)),
-        body.to as usize,
-    )?;
+    let mut mpd = mpd::Mpd::connect().await?;
+    mpd.command(&format!("move {} {}", body.from, body.to)).await?;
     Ok("".into())
 }
 

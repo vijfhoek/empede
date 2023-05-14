@@ -1,57 +1,15 @@
+use std::collections::HashMap;
+
 use anyhow::anyhow;
 use async_std::{
     io::{prelude::BufReadExt, BufReader, ReadExt, WriteExt},
     net::TcpStream,
 };
-use mpdrs::lsinfo::LsInfoResponse;
 
 pub fn host() -> String {
     let host = std::env::var("MPD_HOST").unwrap_or("localhost".to_string());
     let port = std::env::var("MPD_PORT").unwrap_or("6600".to_string());
     format!("{host}:{port}")
-}
-
-pub fn connect() -> Result<mpdrs::Client, mpdrs::error::Error> {
-    let mut client = mpdrs::Client::connect(host())?;
-
-    let password = std::env::var("MPD_PASSWORD").unwrap_or(String::new());
-    if !password.is_empty() {
-        client.login(&password)?;
-    }
-
-    Ok(client)
-}
-
-pub fn ls(path: &str) -> anyhow::Result<Vec<Entry>> {
-    let info = connect()?.lsinfo(path)?;
-
-    fn filename(path: &str) -> String {
-        std::path::Path::new(path)
-            .file_name()
-            .map(|x| x.to_string_lossy().to_string())
-            .unwrap_or("n/a".to_string())
-    }
-
-    Ok(info
-        .iter()
-        .map(|e| match e {
-            LsInfoResponse::Song(song) => Entry::Song {
-                name: song.title.as_ref().unwrap_or(&filename(&song.file)).clone(),
-                artist: song.artist.clone().unwrap_or(String::new()),
-                path: song.file.clone(),
-            },
-
-            LsInfoResponse::Directory { path, .. } => Entry::Directory {
-                name: filename(path),
-                path: path.to_string(),
-            },
-
-            LsInfoResponse::Playlist { path, .. } => Entry::Playlist {
-                name: filename(path),
-                path: path.to_string(),
-            },
-        })
-        .collect())
 }
 
 pub struct QueueItem {
@@ -62,26 +20,7 @@ pub struct QueueItem {
     pub playing: bool,
 }
 
-pub fn playlist() -> anyhow::Result<Vec<QueueItem>> {
-    let mut client = connect()?;
-
-    let current = client.status()?.song;
-
-    let queue = client
-        .queue()?
-        .into_iter()
-        .map(|song| QueueItem {
-            id: song.place.unwrap().id,
-            file: song.file.clone(),
-            title: song.title.as_ref().unwrap_or(&song.file).clone(),
-            artist: song.artist.clone(),
-            playing: current == song.place,
-        })
-        .collect();
-
-    Ok(queue)
-}
-
+#[derive(Debug)]
 pub enum Entry {
     Song {
         name: String,
@@ -103,9 +42,16 @@ pub struct Mpd {
     reader: BufReader<TcpStream>,
 }
 
+#[derive(Debug)]
 pub struct CommandResult {
     properties: Vec<(String, String)>,
     binary: Option<Vec<u8>>,
+}
+
+impl CommandResult {
+    pub fn as_hashmap<'a>(&'a self) -> HashMap<String, String> {
+        self.properties.iter().cloned().collect()
+    }
 }
 
 impl Mpd {
@@ -274,5 +220,95 @@ impl Mpd {
             Some(binary) => Ok(binary),
             None => Err(anyhow!("no album art")),
         }
+    }
+
+    pub fn split_properties(
+        properties: Vec<(String, String)>,
+        at: &[&str],
+    ) -> Vec<HashMap<String, String>> {
+        let mut output = Vec::new();
+        let mut current = None;
+
+        for (key, value) in properties {
+            if at.contains(&key.as_str()) {
+                if let Some(current) = current {
+                    output.push(current);
+                }
+                current = Some(HashMap::new());
+            }
+
+            if let Some(current) = current.as_mut() {
+                current.insert(key, value);
+            }
+        }
+
+        if let Some(current) = current {
+            output.push(current);
+        }
+
+        output
+    }
+
+    pub async fn ls(&mut self, path: &str) -> anyhow::Result<Vec<Entry>> {
+        fn get_filename(path: &str) -> String {
+            std::path::Path::new(path)
+                .file_name()
+                .map(|x| x.to_string_lossy().to_string())
+                .unwrap_or("n/a".to_string())
+        }
+
+        let result = self
+            .command(&format!("lsinfo \"{}\"", Self::escape_str(&path)))
+            .await?;
+
+        let props = Self::split_properties(result.properties, &["file", "directory", "playlist"]);
+
+        let files = props
+            .iter()
+            .flat_map(|prop| {
+                if let Some(file) = prop.get("file") {
+                    Some(Entry::Song {
+                        name: prop.get("Title").unwrap_or(&get_filename(&file)).clone(),
+                        artist: prop.get("Artist").unwrap_or(&String::new()).clone(),
+                        path: file.to_string(),
+                    })
+                } else if let Some(file) = prop.get("directory") {
+                    Some(Entry::Directory {
+                        name: get_filename(&file),
+                        path: file.to_string(),
+                    })
+                } else if let Some(file) = prop.get("playlist") {
+                    Some(Entry::Playlist {
+                        name: get_filename(&file),
+                        path: file.to_string(),
+                    })
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        Ok(files)
+    }
+
+    pub async fn playlist(&mut self) -> anyhow::Result<Vec<QueueItem>> {
+        let status = self.command("status").await?.as_hashmap();
+        let current_songid = status.get("songid");
+
+        let playlistinfo = self.command("playlistinfo").await?;
+        let queue = Self::split_properties(playlistinfo.properties, &["file"]);
+
+        let queue = queue
+            .iter()
+            .map(|song| QueueItem {
+                id: song["Id"].parse().unwrap(),
+                file: song["file"].clone(),
+                title: song.get("Title").unwrap_or(&song["file"]).clone(),
+                artist: song.get("Artist").cloned(),
+                playing: current_songid == song.get("Id"),
+            })
+            .collect();
+
+        Ok(queue)
     }
 }

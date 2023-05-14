@@ -427,12 +427,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bufstream"
-version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "40e38929add23cdf8a366df9b0e088953150724bcbe5fc330b0d8eb3b328eec8"
-
-[[package]]
 name = "bumpalo"
 version = "3.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -666,7 +660,6 @@ dependencies = [
  "askama_tide",
  "async-std",
  "infer 0.13.0",
- "mpdrs",
  "percent-encoding",
  "serde",
  "serde_qs 0.12.0",
@@ -1113,15 +1106,6 @@ name = "minimal-lexical"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
-
-[[package]]
-name = "mpdrs"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dec81b7ee8968b02af77c52cbcee75a33e83924a4322090f3d83075bd2032686"
-dependencies = [
- "bufstream",
-]
 
 [[package]]
 name = "nom"

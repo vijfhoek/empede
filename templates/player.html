@@ -4,9 +4,9 @@
 <div class="current">
   {% if let Some(song) = song %}
   <div class="albumart">
-    <a href="/art?path={{ song.file|urlencode }}" target="_blank">
+    <a href="/art?path={{ song["file"]|urlencode }}" target="_blank">
       <img
-        src="/art?path={{ song.file|urlencode }}"
+        src="/art?path={{ song["file"]|urlencode }}"
         onload="this.style.visibility = 'visible'"
         alt="Album art"
       >
@@ -17,7 +17,7 @@
     {% if let Some(name) = name %}
     <div class="song__name" title="Song name">{{ name }}</div>
     {% endif %}
-    {% if let Some(artist) = song.artist %}
+    {% if let Some(artist) = song.get("Artist") %}
     <div class="song__artist" title="Artist">{{ artist }}</div>
     {% endif %}
   </div>
@@ -34,7 +34,7 @@
     class="control material-symbols-outlined" role="button" title="Previous track"
   >skip_previous</button>
 
-  {% if state == mpdrs::State::Play %}
+  {% if state == "play" %}
   <button
     hx-post="/pause"
     class="control material-symbols-outlined" role="button" title="Pause"
@@ -56,7 +56,7 @@
 
 <script>
   {% if let Some(name) = name %}
-  {% if state == mpdrs::State::Play %}
+  {% if state == "play" %}
   document.title = "▶ " + {{ name|json|safe }} + " - Empede";
   {% else %}
   document.title = "⏸ " + {{ name|json|safe }} + " - Empede";
@@ -65,7 +65,7 @@
   document.title = "Empede";
   {% endif %}
 
-  {% if state == mpdrs::State::Play %}
+  {% if state == "play" %}
   progressBar = document.querySelector(".nowplaying .progress");
   elapsed = {{ elapsed }};
   duration = {{ duration }};
