@@ -104,7 +104,6 @@ impl Mpd {
         stream.write_all(b"binarylimit 1048576\n").await?;
         buffer.clear();
         reader.read_line(&mut buffer).await?;
-        dbg!(&buffer);
 
         Ok(Self { stream, reader })
     }
@@ -126,7 +125,6 @@ impl Mpd {
     }
 
     pub async fn command(&mut self, command: &str) -> anyhow::Result<CommandResult> {
-        dbg!(command);
         let mut properties = Vec::new();
 
         self.stream
@@ -151,7 +149,6 @@ impl Mpd {
                     });
                 }
             } else if buffer.starts_with("OK") {
-                dbg!(&properties);
                 break Ok(CommandResult {
                     properties,
                     binary: None,
@@ -159,7 +156,7 @@ impl Mpd {
             } else if buffer.starts_with("ACK") {
                 break Err(anyhow!(buffer));
             } else {
-                dbg!(&buffer);
+                println!("Unexpected MPD response {buffer}");
             }
         }
     }
