@@ -246,7 +246,7 @@ impl Mpd {
         }
     }
 
-
+    #[allow(clippy::manual_map)]
     pub async fn ls(&mut self, path: &str) -> anyhow::Result<Vec<Entry>> {
         fn get_filename(path: &str) -> String {
             std::path::Path::new(path)
@@ -256,7 +256,7 @@ impl Mpd {
         }
 
         let result = self
-            .command(&format!("lsinfo \"{}\"", Self::escape_str(&path)))
+            .command(&format!("lsinfo \"{}\"", Self::escape_str(path)))
             .await?
             .into_hashmaps(&["file", "directory", "playlist"]);
 
@@ -265,18 +265,18 @@ impl Mpd {
             .flat_map(|prop| {
                 if let Some(file) = prop.get("file") {
                     Some(Entry::Song {
-                        name: prop.get("Title").unwrap_or(&get_filename(&file)).clone(),
+                        name: prop.get("Title").unwrap_or(&get_filename(file)).clone(),
                         artist: prop.get("Artist").unwrap_or(&String::new()).clone(),
                         path: file.to_string(),
                     })
                 } else if let Some(file) = prop.get("directory") {
                     Some(Entry::Directory {
-                        name: get_filename(&file),
+                        name: get_filename(file),
                         path: file.to_string(),
                     })
                 } else if let Some(file) = prop.get("playlist") {
                     Some(Entry::Playlist {
-                        name: get_filename(&file),
+                        name: get_filename(file),
                         path: file.to_string(),
                     })
                 } else {

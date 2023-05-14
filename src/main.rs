@@ -1,4 +1,4 @@
-use std::{path::Path, collections::HashMap};
+use std::{collections::HashMap, path::Path};
 
 use askama::Template;
 use percent_encoding::percent_decode_str;
@@ -176,7 +176,8 @@ struct UpdateQueueBody {
 async fn post_queue_move(mut req: tide::Request<()>) -> tide::Result {
     let body: UpdateQueueBody = req.body_json().await?;
     let mut mpd = mpd::Mpd::connect().await?;
-    mpd.command(&format!("move {} {}", body.from, body.to)).await?;
+    mpd.command(&format!("move {} {}", body.from, body.to))
+        .await?;
     Ok("".into())
 }
 
