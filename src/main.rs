@@ -53,8 +53,14 @@ async fn get_player(_req: tide::Request<()>) -> tide::Result {
     let song = mpd.command("currentsong").await?.into_hashmap();
     let status = mpd.command("status").await?.into_hashmap();
 
-    let elapsed = status["elapsed"].parse().unwrap_or(0.0);
-    let duration = status["duration"].parse().unwrap_or(1.0);
+    let elapsed = status
+        .get("elapsed")
+        .and_then(|e| e.parse().ok())
+        .unwrap_or(0.0);
+    let duration = status
+        .get("duration")
+        .and_then(|e| e.parse().ok())
+        .unwrap_or(1.0);
 
     let mut template = PlayerTemplate {
         song: if song.is_empty() { None } else { Some(&song) },
