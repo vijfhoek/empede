@@ -49,6 +49,20 @@ pub struct CommandResult {
 }
 
 impl CommandResult {
+    pub fn new(properties: Vec<(String, String)>) -> Self {
+        Self {
+            properties,
+            binary: None,
+        }
+    }
+
+    pub fn new_binary(properties: Vec<(String, String)>, binary: Vec<u8>) -> Self {
+        Self {
+            properties,
+            binary: Some(binary),
+        }
+    }
+
     pub fn into_hashmap(self) -> HashMap<String, String> {
         self.properties.into_iter().collect()
     }
@@ -142,17 +156,10 @@ impl Mpd {
 
                 if key == "binary" {
                     let binary = self.read_binary_data(value.parse()?).await?;
-
-                    break Ok(CommandResult {
-                        properties,
-                        binary: Some(binary),
-                    });
+                    break Ok(CommandResult::new_binary(properties, binary));
                 }
             } else if buffer.starts_with("OK") {
-                break Ok(CommandResult {
-                    properties,
-                    binary: None,
-                });
+                break Ok(CommandResult::new(properties));
             } else if buffer.starts_with("ACK") {
                 break Err(anyhow!(buffer));
             } else {
@@ -172,16 +179,10 @@ impl Mpd {
                 if !binary.is_empty() {
                     buffer.append(&mut binary);
                 } else {
-                    return Ok(CommandResult {
-                        properties: result.properties,
-                        binary: Some(buffer),
-                    });
+                    return Ok(CommandResult::new_binary(result.properties, buffer));
                 }
             } else {
-                return Ok(CommandResult {
-                    properties: result.properties,
-                    binary: None,
-                });
+                return Ok(CommandResult::new(result.properties));
             }
         }
     }
