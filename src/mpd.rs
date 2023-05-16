@@ -198,7 +198,7 @@ impl Mpd {
     pub async fn add_pos(&mut self, path: &str, pos: &str) -> anyhow::Result<()> {
         let path = Self::escape_str(path);
         let pos = Self::escape_str(pos);
-        self.command(&format!("add \"{path}\" \"{pos}\"")).await?;
+        self.command(&format!(r#"add "{path}" "{pos}""#)).await?;
         Ok(())
     }
 
@@ -221,7 +221,9 @@ impl Mpd {
 
     pub async fn albumart(&mut self, path: &str) -> anyhow::Result<Vec<u8>> {
         let path = Self::escape_str(path);
-        let result = self.command_binary(&format!("albumart \"{path}\"")).await?;
+        let result = self
+            .command_binary(&format!(r#"albumart "{path}""#))
+            .await?;
 
         match result.binary {
             Some(binary) => Ok(binary),
@@ -232,7 +234,7 @@ impl Mpd {
     pub async fn readpicture(&mut self, path: &str) -> anyhow::Result<Vec<u8>> {
         let path = Self::escape_str(path);
         let result = self
-            .command_binary(&format!("readpicture \"{path}\""))
+            .command_binary(&format!(r#"readpicture "{path}""#))
             .await?;
 
         match result.binary {
@@ -250,8 +252,9 @@ impl Mpd {
                 .unwrap_or("n/a".to_string())
         }
 
+        let path = Self::escape_str(path);
         let result = self
-            .command(&format!("lsinfo \"{}\"", Self::escape_str(path)))
+            .command(&format!(r#"lsinfo "{path}""#))
             .await?
             .into_hashmaps(&["file", "directory", "playlist"]);
 
