@@ -160,6 +160,7 @@ impl Mpd {
                 break Err(anyhow!(buffer));
             } else {
                 println!("Unexpected MPD response {buffer}");
+                break Err(anyhow!(buffer));
             }
         }
     }
