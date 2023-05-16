@@ -98,28 +98,24 @@ impl Mpd {
     }
 
     pub async fn connect() -> anyhow::Result<Self> {
-        let mut stream = TcpStream::connect(host()).await?;
-        let mut reader = BufReader::new(stream.clone());
+        let stream = TcpStream::connect(host()).await?;
+        let reader = BufReader::new(stream.clone());
+        let mut this = Self { stream, reader };
 
         // skip OK MPD line
         // TODO check if it is indeed OK
         let mut buffer = String::new();
-        reader.read_line(&mut buffer).await?;
+        this.reader.read_line(&mut buffer).await?;
 
         let password = std::env::var("MPD_PASSWORD").unwrap_or(String::new());
         if !password.is_empty() {
             let password = Self::escape_str(&password);
-            let command = format!("password \"{password}\"\n");
-            stream.write_all(command.as_bytes()).await?;
-
-            reader.read_line(&mut buffer).await?;
+            this.command(&format!(r#"password "{password}""#)).await?;
         }
 
-        stream.write_all(b"binarylimit 1048576\n").await?;
-        buffer.clear();
-        reader.read_line(&mut buffer).await?;
+        this.command("binarylimit 1048576").await?;
 
-        Ok(Self { stream, reader })
+        Ok(this)
     }
 
     async fn read_binary_data(&mut self, size: usize) -> anyhow::Result<Vec<u8>> {
