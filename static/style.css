@@ -265,14 +265,18 @@ ul.dir li .material-symbols-outlined {
   bottom: 0;
 }
 
-.player .controls {
+.player .controls,
+.player .settings {
   display: flex;
   justify-content: space-around;
   padding: 0 0.5rem 1.0rem;
 }
 
-.player .control {
+.player .controls button {
   font-size: 40px;
+}
+.player .settings button {
+  font-size: 25px;
 }
 
 .player .current {

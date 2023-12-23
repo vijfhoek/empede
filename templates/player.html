@@ -52,21 +52,31 @@
   >skip_next</button>
 </div>
 
-<div class="controls" hx-swap="none" hx-trigger="click,keyUp[key=='Enter']">
+<div class="settings" hx-swap="none" hx-trigger="click,keyUp[key=='Enter']">
   <button
     hx-post="/consume"
-    class="control material-symbols-outlined {% if consume %}active{% endif %}" role="button" title="Consume"
+    class="control material-symbols-outlined {% if consume %}active{% endif %}"
+    role="button" title="Consume"
+    style="font-size: 32px"
   >delete_sweep</button>
 
   <button 
-    hx-post="/shuffle"
-    class="control material-symbols-outlined {% if shuffle %}active{% endif %}" role="button" title="Shuffle"
+    hx-post="/random"
+    class="control material-symbols-outlined {% if random %}active{% endif %}"
+    role="button" title="Shuffle"
   >shuffle</button>
 
   <button 
     hx-post="/repeat"
-    class="control material-symbols-outlined {% if repeat %}active{% endif %}" role="button" title="Repeat"
+    class="control material-symbols-outlined {% if repeat %}active{% endif %}"
+    role="button" title="Repeat"
   >repeat</button>
+
+  <button 
+    hx-post="/single"
+    class="control material-symbols-outlined {% if single %}active{% endif %}"
+    role="button" title="Single"
+  >filter_1</button>
 </div>
 
 <div class="progress" style="width: {{ elapsed / duration * 100.0 }}%"></div>
