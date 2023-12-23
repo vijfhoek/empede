@@ -52,6 +52,18 @@
   >skip_next</button>
 </div>
 
+<div class="controls" hx-swap="none" hx-trigger="click,keyUp[key=='Enter']">
+  <button
+    hx-post="/consume"
+    class="control material-symbols-outlined {% if consume %}active{% endif %}" role="button" title="Consume"
+  >delete_sweep</button>
+
+  <button 
+    hx-post="/shuffle"
+    class="control material-symbols-outlined {% if shuffle %}active{% endif %}" role="button" title="Shuffle"
+  >shuffle</button>
+</div>
+
 <div class="progress" style="width: {{ elapsed / duration * 100.0 }}%"></div>
 
 <script>

@@ -8,6 +8,8 @@ struct PlayerTemplate<'a> {
     song: Option<&'a HashMap<String, String>>,
     name: Option<String>,
     state: &'a str,
+    consume: bool,
+    shuffle: bool,
     elapsed: f32,
     duration: f32,
 }
@@ -30,6 +32,8 @@ pub async fn get_player(_req: tide::Request<()>) -> tide::Result {
         song: if song.is_empty() { None } else { Some(&song) },
         name: None,
         state: &status["state"],
+        consume: status["consume"] == "1",
+        shuffle: status["random"] == "1",
         elapsed,
         duration,
     };

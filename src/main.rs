@@ -26,6 +26,29 @@ async fn post_next(_req: tide::Request<()>) -> tide::Result {
     Ok("".into())
 }
 
+async fn post_consume(_req: tide::Request<()>) -> tide::Result {
+    let mut mpd = mpd::get_instance().await;
+
+    let status = mpd.command("status").await?.into_hashmap();
+    let consume = status["consume"] == "1";
+
+    mpd.command(&format!("consume {}", if consume { 0 } else { 1 }))
+        .await?;
+    Ok("".into())
+}
+
+async fn post_shuffle(_req: tide::Request<()>) -> tide::Result {
+    let mut mpd = mpd::get_instance().await;
+
+    let status = mpd.command("status").await?.into_hashmap();
+    let random = status["random"] == "1";
+
+    mpd.command(&format!("random {}", if random { 0 } else { 1 }))
+        .await?;
+
+    Ok("".into())
+}
+
 async fn sse(_req: tide::Request<()>, sender: tide::sse::Sender) -> tide::Result<()> {
     // Update everything on connect
     sender.send("playlist", "", None).await?;
@@ -35,7 +58,9 @@ async fn sse(_req: tide::Request<()>, sender: tide::sse::Sender) -> tide::Result
     mpd.connect().await.unwrap();
 
     loop {
-        let systems = mpd.idle(&["playlist", "player", "database"]).await?;
+        let systems = mpd
+            .idle(&["playlist", "player", "database", "options"])
+            .await?;
         for system in systems {
             sender.send(&system, "", None).await?;
         }
@@ -67,6 +92,9 @@ async fn main() -> tide::Result<()> {
     app.at("/pause").post(post_pause);
     app.at("/previous").post(post_previous);
     app.at("/next").post(post_next);
+
+    app.at("/consume").post(post_consume);
+    app.at("/shuffle").post(post_shuffle);
 
     app.at("/static").serve_dir("static/")?;
 
