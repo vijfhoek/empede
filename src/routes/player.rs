@@ -9,8 +9,9 @@ struct PlayerTemplate<'a> {
     name: Option<String>,
     state: &'a str,
     consume: bool,
-    shuffle: bool,
+    random: bool,
     repeat: bool,
+    single: bool,
     elapsed: f32,
     duration: f32,
 }
@@ -34,8 +35,9 @@ pub async fn get_player(_req: tide::Request<()>) -> tide::Result {
         name: None,
         state: &status["state"],
         consume: status["consume"] == "1",
-        shuffle: status["random"] == "1",
+        random: status["random"] == "1",
         repeat: status["repeat"] == "1",
+        single: status["single"] == "1",
         elapsed,
         duration,
     };

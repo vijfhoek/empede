@@ -37,7 +37,7 @@ async fn post_consume(_req: tide::Request<()>) -> tide::Result {
     Ok("".into())
 }
 
-async fn post_shuffle(_req: tide::Request<()>) -> tide::Result {
+async fn post_random(_req: tide::Request<()>) -> tide::Result {
     let mut mpd = mpd::get_instance().await;
 
     let status = mpd.command("status").await?.into_hashmap();
@@ -56,6 +56,24 @@ async fn post_repeat(_req: tide::Request<()>) -> tide::Result {
     let repeat = status["repeat"] == "1";
 
     mpd.command(&format!("repeat {}", if repeat { 0 } else { 1 }))
+        .await?;
+
+    Ok("".into())
+}
+
+async fn post_shuffle(_req: tide::Request<()>) -> tide::Result {
+    let mut mpd = mpd::get_instance().await;
+    mpd.command("shuffle").await?;
+    Ok("".into())
+}
+
+async fn post_single(_req: tide::Request<()>) -> tide::Result {
+    let mut mpd = mpd::get_instance().await;
+
+    let status = mpd.command("status").await?.into_hashmap();
+    let single = status["single"] == "1";
+
+    mpd.command(&format!("single {}", if single { 0 } else { 1 }))
         .await?;
 
     Ok("".into())
@@ -106,8 +124,10 @@ async fn main() -> tide::Result<()> {
     app.at("/next").post(post_next);
 
     app.at("/consume").post(post_consume);
-    app.at("/shuffle").post(post_shuffle);
+    app.at("/random").post(post_random);
     app.at("/repeat").post(post_repeat);
+    app.at("/single").post(post_single);
+    app.at("/shuffle").post(post_shuffle);
 
     app.at("/static").serve_dir("static/")?;
 

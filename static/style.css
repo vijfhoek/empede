@@ -81,6 +81,10 @@ ul {
   align-items: center;
 }
 
+.queue-header button {
+  margin-left: 0.75rem;
+}
+
 .queue-next {
   font-weight: bold;
   flex: 1;

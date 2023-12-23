@@ -37,9 +37,13 @@
 
       <div class="queue-header">
         <div class="queue-next">Next in queue</div>
-        <button class="queue-clear" hx-delete="/queue" hx-swap="none">
+        <button hx-delete="/queue" hx-swap="none">
           <span class="material-symbols-outlined">playlist_remove</span>
           Clear
+        </button>
+        <button hx-post="/shuffle" hx-swap="none">
+          <span class="material-symbols-outlined">shuffle</span>
+          Shuffle
         </button>
       </div>
 
