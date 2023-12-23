@@ -26,7 +26,7 @@ Empede is configured using environment variables:
 
 ### Windows
 1. Download and extract the [latest release](https://git.sijman.nl/_/empede/releases)
-3. Run `.\empede` in a PowerShell (To specify a host and port, first set the `$env:MPD_HOST` and `$env:MPD_PORT` variables)
+3. Run `.\empede.exe` in a PowerShell (To specify a host and port, first set the `$env:MPD_HOST` and `$env:MPD_PORT` variables)
 3. Go to http://localhost:8080
 
 ### Building from source
