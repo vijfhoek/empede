@@ -25,6 +25,7 @@ pub struct QueueItem {
 #[derive(Debug)]
 pub enum Entry {
     Song {
+        track: Option<i32>,
         name: String,
         artist: String,
         path: String,
@@ -272,6 +273,7 @@ impl Mpd {
             .flat_map(|prop| {
                 if let Some(file) = prop.get("file") {
                     Some(Entry::Song {
+                        track: prop.get("Track").and_then(|track| track.parse().ok()),
                         name: prop.get("Title").unwrap_or(&get_filename(file)).clone(),
                         artist: prop.get("Artist").unwrap_or(&String::new()).clone(),
                         path: file.to_string(),

@@ -48,7 +48,7 @@
 <ul class="dir" hx-boost="true" tabindex="-1">
   {% for entry in entries %}
   {% match entry %}
-  {% when mpd::Entry::Song with { name, path, artist } %}
+  {% when mpd::Entry::Song with { track, name, path, artist } %}
   <li 
     hx-post="/queue?path={{ path|urlencode }}"
     hx-trigger="click,keyup[key=='Enter']"
@@ -64,6 +64,11 @@
         alt="Album art"
       >
     </div>
+    {% if let Some(track) = track %}
+    <div class="track">
+      {{ track }}.
+    </div>
+    {% endif %}
     <div class="song">
       <div class="song__name">{{ name }}</div>
       <div class="song__artist">{{ artist }}</div>

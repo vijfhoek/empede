@@ -225,6 +225,10 @@ ul.dir li .material-symbols-outlined {
   object-fit: cover;
 }
 
+.track {
+  margin-right: 0.75rem;
+}
+
 .player {
   width: 25rem;
   padding: 1rem 1rem 0;
