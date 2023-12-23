@@ -4,3 +4,4 @@ pub mod index;
 pub mod player;
 pub mod queue;
 pub mod controls;
+pub mod sse;

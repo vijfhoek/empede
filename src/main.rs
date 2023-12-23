@@ -2,24 +2,6 @@ mod crate_version;
 mod mpd;
 mod routes;
 
-async fn sse(_req: tide::Request<()>, sender: tide::sse::Sender) -> tide::Result<()> {
-    // Update everything on connect
-    sender.send("playlist", "", None).await?;
-    sender.send("player", "", None).await?;
-
-    let mut mpd = mpd::Mpd::new();
-    mpd.connect().await.unwrap();
-
-    loop {
-        let systems = mpd
-            .idle(&["playlist", "player", "database", "options"])
-            .await?;
-        for system in systems {
-            sender.send(&system, "", None).await?;
-        }
-    }
-}
-
 #[async_std::main]
 async fn main() -> tide::Result<()> {
     tracing_subscriber::fmt()
@@ -34,7 +16,7 @@ async fn main() -> tide::Result<()> {
     app.at("/browser").get(routes::browser::get_browser);
     app.at("/art").get(routes::art::get_art);
 
-    app.at("/sse").get(tide::sse::endpoint(sse));
+    app.at("/sse").get(tide::sse::endpoint(routes::sse::sse));
 
     app.at("/queue").get(routes::queue::get_queue);
     app.at("/queue").post(routes::queue::post_queue);
