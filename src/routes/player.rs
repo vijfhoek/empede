@@ -13,7 +13,7 @@ struct PlayerTemplate<'a> {
 }
 
 pub async fn get_player(_req: tide::Request<()>) -> tide::Result {
-    let mut mpd = mpd::Mpd::connect().await?;
+    let mut mpd = mpd::get_instance().await;
     let song = mpd.command("currentsong").await?.into_hashmap();
     let status = mpd.command("status").await?.into_hashmap();
 

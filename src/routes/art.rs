@@ -12,7 +12,7 @@ pub async fn get_art(req: tide::Request<()>) -> tide::Result {
     let query: ArtQuery = req.query()?;
     let path = percent_decode_str(&query.path).decode_utf8_lossy();
 
-    let mut mpd = mpd::Mpd::connect().await?;
+    let mut mpd = mpd::get_instance().await;
 
     let resp = if let Ok(art) = mpd.albumart(&path).await {
         let mime = infer::get(&art)

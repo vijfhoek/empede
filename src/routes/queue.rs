@@ -10,7 +10,8 @@ struct QueueTemplate {
 }
 
 pub async fn get_queue(_req: tide::Request<()>) -> tide::Result {
-    let queue = mpd::Mpd::connect().await?.playlist().await?;
+    let mut mpd = mpd::get_instance().await;
+    let queue = mpd.playlist().await?;
     let template = QueueTemplate { queue };
     Ok(template.into())
 }
@@ -29,7 +30,7 @@ struct PostQueueQuery {
 pub async fn post_queue(req: tide::Request<()>) -> tide::Result {
     let query: PostQueueQuery = req.query()?;
     let path = percent_decode_str(&query.path).decode_utf8_lossy();
-    let mut mpd = mpd::Mpd::connect().await?;
+    let mut mpd = mpd::get_instance().await;
 
     if query.replace {
         mpd.clear().await?;
@@ -57,7 +58,7 @@ struct DeleteQueueQuery {
 pub async fn delete_queue(req: tide::Request<()>) -> tide::Result {
     let query: DeleteQueueQuery = req.query()?;
 
-    let mut mpd = mpd::Mpd::connect().await?;
+    let mut mpd = mpd::get_instance().await;
     if let Some(id) = query.id {
         mpd.command(&format!("deleteid {id}")).await?;
     } else {
@@ -75,7 +76,7 @@ struct UpdateQueueBody {
 
 pub async fn post_queue_move(mut req: tide::Request<()>) -> tide::Result {
     let body: UpdateQueueBody = req.body_json().await?;
-    let mut mpd = mpd::Mpd::connect().await?;
+    let mut mpd = mpd::get_instance().await;
     mpd.command(&format!("move {} {}", body.from, body.to))
         .await?;
     Ok("".into())

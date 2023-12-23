@@ -1,9 +1,11 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::OnceLock};
 
 use anyhow::anyhow;
 use async_std::{
     io::{prelude::BufReadExt, BufReader, ReadExt, WriteExt},
     net::TcpStream,
+    sync::{Mutex, MutexGuard},
+    task::block_on,
 };
 
 pub fn host() -> String {
@@ -37,12 +39,19 @@ pub enum Entry {
     },
 }
 
+#[derive(Debug)]
 pub struct Mpd {
     stream: TcpStream,
     reader: BufReader<TcpStream>,
 }
 
-#[derive(Debug)]
+pub static INSTANCE: OnceLock<Mutex<Mpd>> = OnceLock::new();
+
+pub async fn get_instance() -> MutexGuard<'static, Mpd> {
+    let instance = INSTANCE.get_or_init(|| Mutex::from(block_on(Mpd::connect()).unwrap()));
+    instance.lock().await
+}
+
 pub struct CommandResult {
     properties: Vec<(String, String)>,
     binary: Option<Vec<u8>>,
@@ -107,7 +116,7 @@ impl Mpd {
         let mut buffer = String::new();
         this.reader.read_line(&mut buffer).await?;
 
-        let password = std::env::var("MPD_PASSWORD").unwrap_or(String::new());
+        let password = std::env::var("MPD_PASSWORD").unwrap_or_default();
         if !password.is_empty() {
             let password = Self::escape_str(&password);
             this.command(&format!(r#"password "{password}""#)).await?;
@@ -159,7 +168,7 @@ impl Mpd {
             } else if buffer.starts_with("ACK") {
                 break Err(anyhow!(buffer));
             } else {
-                println!("Unexpected MPD response {buffer}");
+                println!("Unexpected MPD response '{buffer}'");
                 break Err(anyhow!(buffer));
             }
         }

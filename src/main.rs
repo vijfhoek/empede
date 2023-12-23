@@ -3,22 +3,26 @@ mod routes;
 mod crate_version;
 
 async fn post_play(_req: tide::Request<()>) -> tide::Result {
-    mpd::Mpd::connect().await?.command("play").await?;
+    let mut mpd = mpd::get_instance().await;
+    mpd.command("play").await?;
     Ok("".into())
 }
 
 async fn post_pause(_req: tide::Request<()>) -> tide::Result {
-    mpd::Mpd::connect().await?.command("pause 1").await?;
+    let mut mpd = mpd::get_instance().await;
+    mpd.command("pause 1").await?;
     Ok("".into())
 }
 
 async fn post_previous(_req: tide::Request<()>) -> tide::Result {
-    mpd::Mpd::connect().await?.command("previous").await?;
+    let mut mpd = mpd::get_instance().await;
+    mpd.command("previous").await?;
     Ok("".into())
 }
 
 async fn post_next(_req: tide::Request<()>) -> tide::Result {
-    mpd::Mpd::connect().await?.command("next").await?;
+    let mut mpd = mpd::get_instance().await;
+    mpd.command("next").await?;
     Ok("".into())
 }
 
