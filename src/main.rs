@@ -1,6 +1,6 @@
+mod crate_version;
 mod mpd;
 mod routes;
-mod crate_version;
 
 async fn post_play(_req: tide::Request<()>) -> tide::Result {
     let mut mpd = mpd::get_instance().await;

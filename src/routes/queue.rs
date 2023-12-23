@@ -1,7 +1,7 @@
-use askama::Template;
 use crate::mpd;
-use serde::Deserialize;
+use askama::Template;
 use percent_encoding::percent_decode_str;
+use serde::Deserialize;
 
 #[derive(Template)]
 #[template(path = "queue.html")]

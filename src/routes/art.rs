@@ -1,6 +1,6 @@
-use serde::Deserialize;
 use crate::mpd;
 use percent_encoding::percent_decode_str;
+use serde::Deserialize;
 
 #[derive(Deserialize, Default)]
 #[serde(default)]

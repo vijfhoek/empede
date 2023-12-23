@@ -1,5 +1,5 @@
-use askama::Template;
 use crate::mpd;
+use askama::Template;
 use std::collections::HashMap;
 
 #[derive(Template)]

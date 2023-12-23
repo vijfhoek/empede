@@ -1,6 +1,6 @@
+use crate::crate_version;
 use askama::Template;
 use serde::Deserialize;
-use crate::crate_version;
 
 #[derive(Template)]
 #[template(path = "index.html")]

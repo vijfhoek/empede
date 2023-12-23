@@ -1,5 +1,5 @@
-pub mod index;
-pub mod queue;
-pub mod player;
-pub mod browser;
 pub mod art;
+pub mod browser;
+pub mod index;
+pub mod player;
+pub mod queue;

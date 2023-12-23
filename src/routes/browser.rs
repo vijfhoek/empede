@@ -1,7 +1,7 @@
-use askama::Template;
-use serde::Deserialize;
 use crate::mpd;
+use askama::Template;
 use percent_encoding::percent_decode_str;
+use serde::Deserialize;
 use std::path::Path;
 
 #[derive(Template)]
