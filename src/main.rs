@@ -49,6 +49,18 @@ async fn post_shuffle(_req: tide::Request<()>) -> tide::Result {
     Ok("".into())
 }
 
+async fn post_repeat(_req: tide::Request<()>) -> tide::Result {
+    let mut mpd = mpd::get_instance().await;
+
+    let status = mpd.command("status").await?.into_hashmap();
+    let repeat = status["repeat"] == "1";
+
+    mpd.command(&format!("repeat {}", if repeat { 0 } else { 1 }))
+        .await?;
+
+    Ok("".into())
+}
+
 async fn sse(_req: tide::Request<()>, sender: tide::sse::Sender) -> tide::Result<()> {
     // Update everything on connect
     sender.send("playlist", "", None).await?;
@@ -95,6 +107,7 @@ async fn main() -> tide::Result<()> {
 
     app.at("/consume").post(post_consume);
     app.at("/shuffle").post(post_shuffle);
+    app.at("/repeat").post(post_repeat);
 
     app.at("/static").serve_dir("static/")?;
 

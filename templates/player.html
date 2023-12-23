@@ -62,6 +62,11 @@
     hx-post="/shuffle"
     class="control material-symbols-outlined {% if shuffle %}active{% endif %}" role="button" title="Shuffle"
   >shuffle</button>
+
+  <button 
+    hx-post="/repeat"
+    class="control material-symbols-outlined {% if repeat %}active{% endif %}" role="button" title="Repeat"
+  >repeat</button>
 </div>
 
 <div class="progress" style="width: {{ elapsed / duration * 100.0 }}%"></div>

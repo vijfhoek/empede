@@ -10,6 +10,7 @@ struct PlayerTemplate<'a> {
     state: &'a str,
     consume: bool,
     shuffle: bool,
+    repeat: bool,
     elapsed: f32,
     duration: f32,
 }
@@ -34,6 +35,7 @@ pub async fn get_player(_req: tide::Request<()>) -> tide::Result {
         state: &status["state"],
         consume: status["consume"] == "1",
         shuffle: status["random"] == "1",
+        repeat: status["repeat"] == "1",
         elapsed,
         duration,
     };
