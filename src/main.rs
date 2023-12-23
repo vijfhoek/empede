@@ -2,83 +2,6 @@ mod crate_version;
 mod mpd;
 mod routes;
 
-async fn post_play(_req: tide::Request<()>) -> tide::Result {
-    let mut mpd = mpd::get_instance().await;
-    mpd.command("play").await?;
-    Ok("".into())
-}
-
-async fn post_pause(_req: tide::Request<()>) -> tide::Result {
-    let mut mpd = mpd::get_instance().await;
-    mpd.command("pause 1").await?;
-    Ok("".into())
-}
-
-async fn post_previous(_req: tide::Request<()>) -> tide::Result {
-    let mut mpd = mpd::get_instance().await;
-    mpd.command("previous").await?;
-    Ok("".into())
-}
-
-async fn post_next(_req: tide::Request<()>) -> tide::Result {
-    let mut mpd = mpd::get_instance().await;
-    mpd.command("next").await?;
-    Ok("".into())
-}
-
-async fn post_consume(_req: tide::Request<()>) -> tide::Result {
-    let mut mpd = mpd::get_instance().await;
-
-    let status = mpd.command("status").await?.into_hashmap();
-    let consume = status["consume"] == "1";
-
-    mpd.command(&format!("consume {}", if consume { 0 } else { 1 }))
-        .await?;
-    Ok("".into())
-}
-
-async fn post_random(_req: tide::Request<()>) -> tide::Result {
-    let mut mpd = mpd::get_instance().await;
-
-    let status = mpd.command("status").await?.into_hashmap();
-    let random = status["random"] == "1";
-
-    mpd.command(&format!("random {}", if random { 0 } else { 1 }))
-        .await?;
-
-    Ok("".into())
-}
-
-async fn post_repeat(_req: tide::Request<()>) -> tide::Result {
-    let mut mpd = mpd::get_instance().await;
-
-    let status = mpd.command("status").await?.into_hashmap();
-    let repeat = status["repeat"] == "1";
-
-    mpd.command(&format!("repeat {}", if repeat { 0 } else { 1 }))
-        .await?;
-
-    Ok("".into())
-}
-
-async fn post_shuffle(_req: tide::Request<()>) -> tide::Result {
-    let mut mpd = mpd::get_instance().await;
-    mpd.command("shuffle").await?;
-    Ok("".into())
-}
-
-async fn post_single(_req: tide::Request<()>) -> tide::Result {
-    let mut mpd = mpd::get_instance().await;
-
-    let status = mpd.command("status").await?.into_hashmap();
-    let single = status["single"] == "1";
-
-    mpd.command(&format!("single {}", if single { 0 } else { 1 }))
-        .await?;
-
-    Ok("".into())
-}
-
 async fn sse(_req: tide::Request<()>, sender: tide::sse::Sender) -> tide::Result<()> {
     // Update everything on connect
     sender.send("playlist", "", None).await?;
@@ -118,16 +41,16 @@ async fn main() -> tide::Result<()> {
     app.at("/queue").delete(routes::queue::delete_queue);
     app.at("/queue/move").post(routes::queue::post_queue_move);
 
-    app.at("/play").post(post_play);
-    app.at("/pause").post(post_pause);
-    app.at("/previous").post(post_previous);
-    app.at("/next").post(post_next);
+    app.at("/play").post(routes::controls::post_play);
+    app.at("/pause").post(routes::controls::post_pause);
+    app.at("/previous").post(routes::controls::post_previous);
+    app.at("/next").post(routes::controls::post_next);
 
-    app.at("/consume").post(post_consume);
-    app.at("/random").post(post_random);
-    app.at("/repeat").post(post_repeat);
-    app.at("/single").post(post_single);
-    app.at("/shuffle").post(post_shuffle);
+    app.at("/consume").post(routes::controls::post_consume);
+    app.at("/random").post(routes::controls::post_random);
+    app.at("/repeat").post(routes::controls::post_repeat);
+    app.at("/single").post(routes::controls::post_single);
+    app.at("/shuffle").post(routes::controls::post_shuffle);
 
     app.at("/static").serve_dir("static/")?;
 

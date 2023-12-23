@@ -57,6 +57,10 @@ pub async fn get_instance() -> MutexGuard<'static, Mpd> {
     instance.lock().await
 }
 
+pub async fn command(command: &str) -> anyhow::Result<CommandResult> {
+    get_instance().await.command(command).await
+}
+
 pub struct CommandResult {
     properties: Vec<(String, String)>,
     binary: Option<Vec<u8>>,
