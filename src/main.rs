@@ -1,43 +1,43 @@
+use actix_web::{middleware::Logger, web, App, HttpServer};
+
 mod crate_version;
 mod mpd;
 mod routes;
 
-#[async_std::main]
-async fn main() -> tide::Result<()> {
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::WARN)
-        .init();
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    let bind = std::env::var("EMPEDE_BIND").unwrap_or("0.0.0.0:8080".into());
+    let (host, port) = bind.split_once(':').unwrap();
 
-    let mut app = tide::new();
-    app.with(tide_tracing::TraceMiddleware::new());
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 
-    app.at("/").get(routes::index::get_index);
-    app.at("/player").get(routes::player::get_player);
-    app.at("/browser").get(routes::browser::get_browser);
-    app.at("/art").get(routes::art::get_art);
-
-    app.at("/sse").get(tide::sse::endpoint(routes::sse::sse));
-
-    app.at("/queue").get(routes::queue::get_queue);
-    app.at("/queue").post(routes::queue::post_queue);
-    app.at("/queue").delete(routes::queue::delete_queue);
-    app.at("/queue/move").post(routes::queue::post_queue_move);
-
-    app.at("/play").post(routes::controls::post_play);
-    app.at("/pause").post(routes::controls::post_pause);
-    app.at("/previous").post(routes::controls::post_previous);
-    app.at("/next").post(routes::controls::post_next);
-
-    app.at("/consume").post(routes::controls::post_consume);
-    app.at("/random").post(routes::controls::post_random);
-    app.at("/repeat").post(routes::controls::post_repeat);
-    app.at("/single").post(routes::controls::post_single);
-    app.at("/shuffle").post(routes::controls::post_shuffle);
-
-    app.at("/static").serve_dir("static/")?;
-
-    let bind = std::env::var("EMPEDE_BIND").unwrap_or("0.0.0.0:8080".to_string());
-    app.listen(bind).await?;
+    HttpServer::new(|| {
+        App::new().wrap(Logger::default()).service(
+            web::scope("")
+                .service(routes::index::get_index)
+                .service(routes::player::get_player)
+                .service(routes::browser::get_browser)
+                .service(routes::art::get_art)
+                .service(routes::sse::idle)
+                .service(routes::queue::get_queue)
+                .service(routes::queue::post_queue)
+                .service(routes::queue::delete_queue)
+                .service(routes::queue::post_queue_move)
+                .service(routes::controls::post_play)
+                .service(routes::controls::post_pause)
+                .service(routes::controls::post_previous)
+                .service(routes::controls::post_next)
+                .service(routes::controls::post_consume)
+                .service(routes::controls::post_random)
+                .service(routes::controls::post_repeat)
+                .service(routes::controls::post_single)
+                .service(routes::controls::post_shuffle)
+                .service(actix_files::Files::new("/static", "./static")),
+        )
+    })
+    .bind((host, port.parse().unwrap()))?
+    .run()
+    .await?;
 
     Ok(())
 }

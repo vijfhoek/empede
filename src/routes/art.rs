@@ -1,4 +1,9 @@
 use crate::mpd;
+use actix_web::{
+    get,
+    http::header::{self, CacheDirective},
+    web, HttpResponse, Responder,
+};
 use percent_encoding::percent_decode_str;
 use serde::Deserialize;
 
@@ -8,33 +13,30 @@ struct ArtQuery {
     path: String,
 }
 
-pub async fn get_art(req: tide::Request<()>) -> tide::Result {
-    let query: ArtQuery = req.query()?;
+#[get("/art")]
+pub async fn get_art(query: web::Query<ArtQuery>) -> impl Responder {
     let path = percent_decode_str(&query.path).decode_utf8_lossy();
-
     let mut mpd = mpd::get_instance().await;
 
-    let resp = if let Ok(art) = mpd.albumart(&path).await {
+    if let Ok(art) = mpd.albumart(&path).await {
         let mime = infer::get(&art)
             .map(|k| k.mime_type())
             .unwrap_or("application/octet-stream");
 
-        tide::Response::builder(tide::StatusCode::Ok)
-            .body(art)
+        HttpResponse::Ok()
             .content_type(mime)
-            .header("cache-control", "max-age=3600")
+            .append_header(header::CacheControl(vec![CacheDirective::MaxAge(3600)]))
+            .body(art)
     } else if let Ok(art) = mpd.readpicture(&path).await {
         let mime = infer::get(&art)
             .map(|k| k.mime_type())
             .unwrap_or("application/octet-stream");
 
-        tide::Response::builder(tide::StatusCode::Ok)
-            .body(art)
+        HttpResponse::Ok()
             .content_type(mime)
-            .header("cache-control", "max-age=3600")
+            .append_header(header::CacheControl(vec![CacheDirective::MaxAge(3600)]))
+            .body(art)
     } else {
-        tide::Response::builder(tide::StatusCode::NotFound)
-    };
-
-    Ok(resp.into())
+        HttpResponse::NotFound().finish()
+    }
 }

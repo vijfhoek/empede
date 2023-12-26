@@ -1,4 +1,5 @@
 use crate::mpd;
+use actix_web::{get, web, Responder};
 use askama::Template;
 use percent_encoding::percent_decode_str;
 use serde::Deserialize;
@@ -17,19 +18,17 @@ struct BrowserQuery {
     path: String,
 }
 
-pub async fn get_browser(req: tide::Request<()>) -> tide::Result {
-    let query: BrowserQuery = req.query()?;
+#[get("/browser")]
+pub async fn get_browser(query: web::Query<BrowserQuery>) -> impl Responder {
     let path = percent_decode_str(&query.path).decode_utf8_lossy();
     let mut mpd = mpd::get_instance().await;
-    let entries = mpd.ls(&path).await?;
+    let entries = mpd.ls(&path).await.unwrap();
 
-    let template = BrowserTemplate {
+    BrowserTemplate {
         path: Path::new(&*path)
             .iter()
             .map(|s| s.to_string_lossy().to_string())
             .collect(),
         entries,
-    };
-
-    Ok(template.into())
+    }
 }

@@ -1,13 +1,14 @@
 use crate::mpd;
+use actix_web::{get, Responder};
 use askama::Template;
 use std::collections::HashMap;
 
 #[derive(Template)]
 #[template(path = "player.html")]
-struct PlayerTemplate<'a> {
-    song: Option<&'a HashMap<String, String>>,
+struct PlayerTemplate {
+    song: Option<HashMap<String, String>>,
     name: Option<String>,
-    state: &'a str,
+    state: String,
     consume: bool,
     random: bool,
     repeat: bool,
@@ -16,10 +17,11 @@ struct PlayerTemplate<'a> {
     duration: f32,
 }
 
-pub async fn get_player(_req: tide::Request<()>) -> tide::Result {
+#[get("/player")]
+pub async fn get_player() -> impl Responder {
     let mut mpd = mpd::get_instance().await;
-    let song = mpd.command("currentsong").await?.into_hashmap();
-    let status = mpd.command("status").await?.into_hashmap();
+    let song = mpd.command("currentsong").await.unwrap().into_hashmap();
+    let status = mpd.command("status").await.unwrap().into_hashmap();
 
     let elapsed = status
         .get("elapsed")
@@ -31,9 +33,13 @@ pub async fn get_player(_req: tide::Request<()>) -> tide::Result {
         .unwrap_or(1.0);
 
     let mut template = PlayerTemplate {
-        song: if song.is_empty() { None } else { Some(&song) },
+        song: if song.is_empty() {
+            None
+        } else {
+            Some(song.clone())
+        },
         name: None,
-        state: &status["state"],
+        state: status["state"].clone(),
         consume: status["consume"] == "1",
         random: status["random"] == "1",
         repeat: status["repeat"] == "1",
@@ -47,5 +53,5 @@ pub async fn get_player(_req: tide::Request<()>) -> tide::Result {
         template.name = Some(name);
     }
 
-    Ok(template.into())
+    template
 }

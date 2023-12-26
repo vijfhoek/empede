@@ -1,4 +1,5 @@
 use crate::mpd;
+use actix_web::{delete, get, post, web, HttpResponse, Responder};
 use askama::Template;
 use percent_encoding::percent_decode_str;
 use serde::Deserialize;
@@ -9,11 +10,11 @@ struct QueueTemplate {
     queue: Vec<mpd::QueueItem>,
 }
 
-pub async fn get_queue(_req: tide::Request<()>) -> tide::Result {
+#[get("/queue")]
+pub async fn get_queue() -> impl Responder {
     let mut mpd = mpd::get_instance().await;
-    let queue = mpd.playlist().await?;
-    let template = QueueTemplate { queue };
-    Ok(template.into())
+    let queue = mpd.playlist().await.unwrap();
+    QueueTemplate { queue }
 }
 
 #[derive(Deserialize)]
@@ -27,26 +28,26 @@ struct PostQueueQuery {
     play: bool,
 }
 
-pub async fn post_queue(req: tide::Request<()>) -> tide::Result {
-    let query: PostQueueQuery = req.query()?;
+#[post("/queue")]
+pub async fn post_queue(query: web::Query<PostQueueQuery>) -> impl Responder {
     let path = percent_decode_str(&query.path).decode_utf8_lossy();
     let mut mpd = mpd::get_instance().await;
 
     if query.replace {
-        mpd.clear().await?;
+        mpd.clear().await.unwrap();
     }
 
     if query.next {
-        mpd.add_pos(&path, "+0").await?;
+        mpd.add_pos(&path, "+0").await.unwrap();
     } else {
-        mpd.add(&path).await?;
+        mpd.add(&path).await.unwrap();
     }
 
     if query.play {
-        mpd.play().await?;
+        mpd.play().await.unwrap();
     }
 
-    Ok("".into())
+    HttpResponse::NoContent()
 }
 
 #[derive(Deserialize)]
@@ -55,17 +56,16 @@ struct DeleteQueueQuery {
     id: Option<u32>,
 }
 
-pub async fn delete_queue(req: tide::Request<()>) -> tide::Result {
-    let query: DeleteQueueQuery = req.query()?;
-
+#[delete("/queue")]
+pub async fn delete_queue(query: web::Query<DeleteQueueQuery>) -> impl Responder {
     let mut mpd = mpd::get_instance().await;
     if let Some(id) = query.id {
-        mpd.command(&format!("deleteid {id}")).await?;
+        mpd.command(&format!("deleteid {id}")).await.unwrap();
     } else {
-        mpd.command("clear").await?;
+        mpd.command("clear").await.unwrap();
     }
 
-    Ok("".into())
+    HttpResponse::NoContent()
 }
 
 #[derive(Deserialize, Debug)]
@@ -74,10 +74,11 @@ struct UpdateQueueBody {
     to: u32,
 }
 
-pub async fn post_queue_move(mut req: tide::Request<()>) -> tide::Result {
-    let body: UpdateQueueBody = req.body_json().await?;
+#[post("/queue/move")]
+pub async fn post_queue_move(body: web::Json<UpdateQueueBody>) -> impl Responder {
     let mut mpd = mpd::get_instance().await;
     mpd.command(&format!("move {} {}", body.from, body.to))
-        .await?;
-    Ok("".into())
+        .await
+        .unwrap();
+    HttpResponse::NoContent()
 }

@@ -1,11 +1,10 @@
-use std::{collections::HashMap, sync::OnceLock};
+use std::collections::HashMap;
 
 use anyhow::anyhow;
-use async_std::{
-    io::{prelude::BufReadExt, BufReader, ReadExt, WriteExt},
+use tokio::{
+    io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufStream},
     net::TcpStream,
-    sync::{Mutex, MutexGuard},
-    task::block_on,
+    sync::{Mutex, MutexGuard, OnceCell},
 };
 
 pub fn host() -> String {
@@ -42,19 +41,21 @@ pub enum Entry {
 
 #[derive(Debug)]
 pub struct Mpd {
-    stream: Option<TcpStream>,
-    reader: Option<BufReader<TcpStream>>,
+    bufstream: Option<BufStream<TcpStream>>,
 }
 
-pub static INSTANCE: OnceLock<Mutex<Mpd>> = OnceLock::new();
+pub static INSTANCE: OnceCell<Mutex<Mpd>> = OnceCell::const_new();
 
 pub async fn get_instance() -> MutexGuard<'static, Mpd> {
-    let instance = INSTANCE.get_or_init(|| {
-        let mut mpd = Mpd::new();
-        block_on(mpd.connect()).unwrap();
-        Mutex::from(mpd)
-    });
-    instance.lock().await
+    INSTANCE
+        .get_or_init(|| async {
+            let mut mpd = Mpd::new();
+            mpd.connect().await.unwrap();
+            Mutex::from(mpd)
+        })
+        .await
+        .lock()
+        .await
 }
 
 pub async fn command(command: &str) -> anyhow::Result<CommandResult> {
@@ -116,45 +117,42 @@ impl Mpd {
     }
 
     pub fn new() -> Self {
-        Self {
-            stream: None,
-            reader: None,
-        }
+        Self { bufstream: None }
     }
 
     pub async fn connect(&mut self) -> anyhow::Result<()> {
-        self.stream = Some(TcpStream::connect(host()).await?);
-        self.reader = Some(BufReader::new(self.stream.as_mut().unwrap().clone()));
+        let stream = TcpStream::connect(host()).await?;
+        let mut bufstream = BufStream::new(stream);
 
         // skip OK MPD line
         // TODO check if it is indeed OK
         let mut buffer = String::new();
-        self.reader.as_mut().unwrap().read_line(&mut buffer).await?;
+        bufstream.read_line(&mut buffer).await?;
 
         let password = std::env::var("MPD_PASSWORD").unwrap_or_default();
         if !password.is_empty() {
             let password = Self::escape_str(&password);
-            self.stream
-                .as_mut()
-                .unwrap()
-                .write_all(format!(r#"password "{password}"\n"#).as_bytes())
+            bufstream
+                .write_all(format!("password \"{password}\"\n").as_bytes())
                 .await?;
-            self.reader.as_mut().unwrap().read_line(&mut buffer).await?;
+            bufstream.flush().await?;
+            bufstream.read_line(&mut buffer).await?;
         }
 
-        self.stream
-            .as_mut()
-            .unwrap()
+        bufstream
             .write_all("binarylimit 1048576\n".as_bytes())
             .await?;
-        self.reader.as_mut().unwrap().read_line(&mut buffer).await?;
+        bufstream.flush().await?;
+        bufstream.read_line(&mut buffer).await?;
+
+        self.bufstream = Some(bufstream);
 
         Ok(())
     }
 
     async fn read_binary_data(&mut self, size: usize) -> anyhow::Result<Vec<u8>> {
         let mut binary = vec![0u8; size];
-        self.reader
+        self.bufstream
             .as_mut()
             .unwrap()
             .read_exact(&mut binary)
@@ -163,11 +161,19 @@ impl Mpd {
         let mut buffer = String::new();
 
         // Skip the newline after the binary data
-        self.reader.as_mut().unwrap().read_line(&mut buffer).await?;
+        self.bufstream
+            .as_mut()
+            .unwrap()
+            .read_line(&mut buffer)
+            .await?;
 
         // Skip the "OK" after the binary data
         // TODO Check if actually OK
-        self.reader.as_mut().unwrap().read_line(&mut buffer).await?;
+        self.bufstream
+            .as_mut()
+            .unwrap()
+            .read_line(&mut buffer)
+            .await?;
 
         Ok(binary)
     }
@@ -176,16 +182,21 @@ impl Mpd {
         let mut properties = Vec::new();
 
         'retry: loop {
-            self.stream
+            self.bufstream
                 .as_mut()
                 .unwrap()
                 .write_all(format!("{command}\n").as_bytes())
                 .await?;
+            self.bufstream.as_mut().unwrap().flush().await?;
 
             let mut buffer = String::new();
             break 'retry (loop {
                 buffer.clear();
-                self.reader.as_mut().unwrap().read_line(&mut buffer).await?;
+                self.bufstream
+                    .as_mut()
+                    .unwrap()
+                    .read_line(&mut buffer)
+                    .await?;
 
                 if let Some((key, value)) = buffer.split_once(": ") {
                     let value = value.trim_end();

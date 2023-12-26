@@ -9,13 +9,17 @@ repository = "https://github.com/vijfhoek/empede"
 [dependencies]
 anyhow = "1.0.70"
 askama = { version = "0.12.0", default-features = false, features = ["serde-json"] }
-askama_tide = "0.15.0"
-async-std = { version = "1.12.0", features = ["attributes"] }
 infer = { version = "0.15.0", default-features = false }
 percent-encoding = "2.2.0"
 serde = { version = "1.0.160", features = ["derive"] }
 serde_qs = "0.12.0"
-tide = "0.16.0"
-tide-tracing = "0.0.12"
-tracing = { version = "0.1.37", default-features = false, features = ["std"] }
-tracing-subscriber = { version = "0.3.17", default-features = false, features = ["std", "fmt"] }
+askama_actix = "0.14.0"
+tokio = { version = "1.35.1", features = ["full"] }
+actix-web = "4.4.0"
+thiserror = "1.0.51"
+actix-files = "0.6.2"
+actix-web-lab = "0.20.1"
+tokio-stream = "0.1.14"
+futures = "0.3.29"
+async-stream = "0.3.5"
+env_logger = "0.10.1"
