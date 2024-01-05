@@ -33,10 +33,18 @@ button {
   display: flex;
   line-height: 24px;
   cursor: pointer;
+  padding: 0.25rem 0.5rem;
 }
+
+button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 0.25rem;
+}
+
 button .material-symbols-outlined {
   margin-right: 0.25rem;
 }
+
 .active {
   color: #99f;
 }
@@ -81,10 +89,6 @@ ul {
   align-items: center;
 }
 
-.queue-header button {
-  margin-left: 0.75rem;
-}
-
 .queue-next {
   font-weight: bold;
   flex: 1;
@@ -93,6 +97,7 @@ ul {
 .queue {
   margin-top: 0.5rem;
   overflow: auto;
+  scroll-behavior: smooth;
 }
 
 .queue ul li {
@@ -135,28 +140,33 @@ ul {
   display: none;
 }
 
+.queue .remove button {
+  padding: 0.25rem;
+}
+
 .browser .header {
   display: flex;
   flex-flow: column;
   background-color: #334;
   border-radius: 0.25rem;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 0.5rem;
   margin: 16px 16px 0;
 }
 
 .browser .buttons {
   display: flex;
   flex-flow: row;
-  margin-top: 0.75rem;
+  margin-top: 0.25rem;
 }
 .browser .buttons button {
-  margin-right: 1.0rem;
+  margin-right: 0.5rem;
 }
 
 ul.breadcrumb {
   display: flex;
   flex-wrap: wrap;
   list-style: none;
+  margin-left: 0.5rem;
 }
 @media (prefers-contrast: more) {
   ul.breadcrumb {
@@ -277,7 +287,11 @@ ul.dir li .material-symbols-outlined {
 .player .settings {
   display: flex;
   justify-content: space-around;
-  padding: 0 0.5rem 1.0rem;
+  padding: 0 0.5rem 0.25rem;
+}
+
+.player .settings {
+  margin-bottom: 0.5rem;
 }
 
 .player .controls button {
