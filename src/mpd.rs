@@ -15,6 +15,7 @@ pub fn host() -> String {
 
 pub struct QueueItem {
     pub id: u32,
+    pub position: i32,
     pub file: String,
     pub title: String,
     pub artist: Option<String>,
@@ -249,15 +250,20 @@ impl Mpd {
         Ok(())
     }
 
-    pub async fn add_pos(&mut self, path: &str, pos: &str) -> anyhow::Result<()> {
+    pub async fn add_position(&mut self, path: &str, position: &str) -> anyhow::Result<()> {
         let path = Self::escape_str(path);
-        let pos = Self::escape_str(pos);
-        self.command(&format!(r#"add "{path}" "{pos}""#)).await?;
+        let position = Self::escape_str(position);
+        self.command(&format!(r#"add "{path}" "{position}""#))
+            .await?;
         Ok(())
     }
 
-    pub async fn play(&mut self) -> anyhow::Result<()> {
-        self.command("play").await?;
+    pub async fn play(&mut self, position: Option<&str>) -> anyhow::Result<()> {
+        let command = match position {
+            Some(position) => format!(r#"play "{position}""#),
+            None => "play".into(),
+        };
+        self.command(&command).await?;
         Ok(())
     }
 
@@ -352,6 +358,7 @@ impl Mpd {
             .iter()
             .map(|song| QueueItem {
                 id: song["Id"].parse().unwrap(),
+                position: song["Pos"].parse().unwrap(),
                 file: song["file"].clone(),
                 title: song.get("Title").unwrap_or(&song["file"]).clone(),
                 artist: song.get("Artist").cloned(),

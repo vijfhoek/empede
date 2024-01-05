@@ -1,4 +1,5 @@
-use actix_web::{post, HttpResponse, Responder};
+use actix_web::{post, web, HttpResponse, Responder};
+use serde::Deserialize;
 
 use crate::mpd;
 
@@ -13,9 +14,16 @@ async fn toggle_setting(setting: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[derive(Deserialize)]
+struct PostPlayQuery {
+    #[serde(default)]
+    position: Option<String>,
+}
+
 #[post("/play")]
-pub async fn post_play() -> impl Responder {
-    mpd::command("play").await.unwrap();
+pub async fn post_play(query: web::Query<PostPlayQuery>) -> impl Responder {
+    let mut mpd = mpd::get_instance().await;
+    mpd.play(query.position.as_deref()).await.unwrap();
     HttpResponse::NoContent()
 }
 

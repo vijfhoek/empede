@@ -38,13 +38,13 @@ pub async fn post_queue(query: web::Query<PostQueueQuery>) -> impl Responder {
     }
 
     if query.next {
-        mpd.add_pos(&path, "+0").await.unwrap();
+        mpd.add_position(&path, "+0").await.unwrap();
     } else {
         mpd.add(&path).await.unwrap();
     }
 
     if query.play {
-        mpd.play().await.unwrap();
+        mpd.play(None).await.unwrap();
     }
 
     HttpResponse::NoContent()

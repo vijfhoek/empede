@@ -3,7 +3,12 @@
 
 <ul>
   {% for item in queue %}
-  <li {% if item.playing %}class="playing"{% endif %}>
+  <li
+    {% if item.playing %}class="playing"{% endif %}
+    hx-post="/play?position={{ item.position|urlencode }}"
+    hx-trigger="click,keyup[key='Enter']"
+    hx-swap="none"
+  >
     <div class="albumart">
       <img
         src="/art?path={{ item.file|urlencode }}"
