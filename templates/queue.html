@@ -25,6 +25,14 @@
 </ul>
 
 <script>
+const scrollCurrentSongIntoView = () => {
+  const hoveredSong = document.querySelector(".queue li:hover");
+  if (hoveredSong === null) {
+    const currentSong = document.querySelector(".queue li.playing");
+    currentSong.scrollIntoView({ block: "nearest" });
+  }
+}
+
 htmx.onLoad(() => {
   const isReduced = window
     .matchMedia("(prefers-reduced-motion: reduce)")
@@ -38,5 +46,7 @@ htmx.onLoad(() => {
       body: JSON.stringify({from: event.oldIndex, to: event.newIndex}),
     }),
   });
+
+  scrollCurrentSongIntoView();
 });
 </script>
