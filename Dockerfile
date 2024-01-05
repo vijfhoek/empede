@@ -1,9 +1,9 @@
-FROM rust:alpine as builder
+FROM rust:alpine AS builder
 WORKDIR /usr/src/empede
 RUN apk add --no-cache build-base
 COPY ./src ./src
 COPY ./templates ./templates
-COPY ./Cargo.* ./
+COPY ./Cargo.toml ./Cargo.lock ./
 RUN cargo install --path .
 
 FROM alpine:latest
