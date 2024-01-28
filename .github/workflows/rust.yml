@@ -1,0 +1,38 @@
+name: Rust
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: rustfmt
+      run: cargo fmt --check
+    - name: clippy
+      run: cargo clippy
+      
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cargo build --release
+    - name: Strip
+      run: strip target/release/empede
+    - name: Move binary
+      run: mv target/release/empede .
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: target
+        path: |
+          empede
+          static/
