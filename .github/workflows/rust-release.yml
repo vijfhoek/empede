@@ -1,0 +1,32 @@
+name: Releases
+
+on: 
+  push:
+    tags:
+    - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cargo build --release
+    - name: Strip
+      run: strip target/release/empede
+    - name: Move binary
+      run: |
+        mkdir empede
+        mv target/release/empede empede/
+        mv static/ empede/
+        tar czf empede.tar.gz empede/
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: target
+        path: empede.tar.gz
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: empede.tar.gz
